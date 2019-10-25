@@ -241,7 +241,6 @@ def run_test(args, axs, plt_count):
     CRED = "\x1b[1;31m"
     CGREEN = "\x1b[1;32m"
     CYELLOW = "\x1b[1;33m"
-    CBLUE = "\x1b[1;34m"
     CEND = "\33[0m"
 
     # plt.figure() # Open a new figure for each test (only in all tests mode).
@@ -346,7 +345,12 @@ def run_test(args, axs, plt_count):
             save_data(uuts)
             for index, data_set in enumerate(data):
                 for ch in channels[index]:
-                    axs[plt_count].plot(data_set[0][ch-1::uuts[index].nchan()])
+                    try:
+                        axs[plt_count].plot(data_set[0][ch-1::uuts[index].nchan()])
+                        axs[plt_count].set_title("Test: {} Runs: {} Trg: {} Event: {}".format(args.test, args.loops, args.trg, args.event))
+                    except Exception:
+                        axs.plot(data_set[0][ch-1::uuts[index].nchan()])
+                        axs.set_title("Test: {} Runs: {} Trg: {} Event: {}".format(args.test, args.loops, args.trg, args.event))
 
         else:
             for data_set in data:
@@ -375,7 +379,7 @@ def run_test(args, axs, plt_count):
             print(CGREEN + "Test successful. Test number: ", iteration, CEND)
         # import code
         # code.interact(local=locals())
-    print(CBLUE);print("Finished '{}' test. Total tests run: {}".format(args.test, args.loops));print(CEND)
+    print("Finished '{}' test. Total tests run: {}".format(args.test, args.loops))
     # plt.pause(0.001)
     # plt.show(block=False)
     # plt.show()

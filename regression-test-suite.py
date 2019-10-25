@@ -346,7 +346,12 @@ def run_test(args, axs, plt_count):
             save_data(uuts)
             for index, data_set in enumerate(data):
                 for ch in channels[index]:
-                    axs[plt_count].plot(data_set[0][ch-1::uuts[index].nchan()])
+                    try:
+                        axs[plt_count].plot(data_set[0][ch-1::uuts[index].nchan()])
+                        axs[plt_count].set_title("Test: {} Runs: {} Trg: {} Event: {}".format(args.test, args.loops, args.trg, args.event))
+                    except Exception:
+                        axs.plot(data_set[0][ch-1::uuts[index].nchan()])
+                        axs.set_title("Test: {} Runs: {} Trg: {} Event: {}".format(args.test, args.loops, args.trg, args.event))
 
         else:
             for data_set in data:

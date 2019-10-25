@@ -505,7 +505,6 @@ def run_main():
     elif args.event == "all":
         args.trg = args.trg.split(",")
         args.trg = [int(i) for i in args.trg]
-        print("Hello world!")
         fig, axs = create_fig(args, args.test)
         plt_count = -1
         for event in all_events:

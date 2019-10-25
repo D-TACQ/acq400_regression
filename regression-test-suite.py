@@ -451,6 +451,8 @@ def run_main():
 
             for trg in all_trgs:
                 args.trg = trg
+                if test == 'rgm' and trg == [1,0,0]:
+                    continue
 
                 if test == "post": # Don't need any events for post mode.
                     args.event = "N/A"
@@ -473,6 +475,8 @@ def run_main():
         plt_count = -1
 
         for trg in all_trgs:
+            if args.test == 'rgm' and trg == [1,0,0]:
+                continue
             args.trg = trg
             if args.test == "post": # Don't need any events for post mode.
                 args.event = "N/A"

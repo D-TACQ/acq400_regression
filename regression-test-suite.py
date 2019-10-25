@@ -10,11 +10,14 @@ http://eigg-fs:8090/mediawiki/index.php/Products:ACQ400:Regression_Testing
 
 Usage:
 
-python regression-test-suite.py --trg=int --test=post --channels="1,1" UUT1 UUT2
+python3 regression-test-suite.py --test='all' --sig_gen_name='10.12.196.174' \
+--channels=[[1,2]] --demux=0 --show_es=1 acq1001_084
 
-python regression-test-suite.py --trg=ext --test=post --channels="1,1" UUT1 UUT2
+python3 regression-test-suite.py --test='pre_post' --trg='1,0,1' --event='all' \
+--sig_gen_name='10.12.196.174' --channels=[[1,2]] --demux=0 --show_es=1 acq1001_084
 
-
+python3 regression-test-suite.py --test='pre_post' --trg='all' --event='1,0,1' \
+--sig_gen_name='10.12.196.174' --channels=[[1,2]] --demux=0 --show_es=1 acq1001_084
 
 """
 
@@ -27,6 +30,7 @@ import argparse
 import socket
 from future import builtins
 import matplotlib.pyplot as plt
+import sys
 
 
 def create_fig(args, test, all=False):
@@ -391,7 +395,23 @@ def run_test(args, axs, plt_count):
 
 
 def run_main():
-    parser = argparse.ArgumentParser(description='acq400 regression test.')
+
+    desc = "\n\nacq400_regression tests. For argument info run: \n\n" \
+    "./regression-test-suite.py -h \n\n" \
+    "For Usage examples see below:\n\n" \
+    "python3 regression-test-suite.py --test='all' --sig_gen_name='10.12.196.174'" \
+    "--channels=[[1,2]] --demux=0 --show_es=1 acq1001_084\n" \
+    "\n\n" \
+    "python3 regression-test-suite.py --test='pre_post' --trg='1,0,1' --event='all'" \
+    "--sig_gen_name='10.12.196.174' --channels=[[1,2]] --demux=0 --show_es=1 acq1001_084\n" \
+    "\n\n" \
+    "python3 regression-test-suite.py --test='pre_post' --trg='all' --event='1,0,1'" \
+    "--sig_gen_name='10.12.196.174' --channels=[[1,2]] --demux=0 --show_es=1 acq1001_084 \n\n"
+
+    if len(sys.argv) < 2:
+        print(desc)
+
+    parser = argparse.ArgumentParser(description='regression tests', epilog=desc)
 
     parser.add_argument('--test', default="pre_post", type=str,
     help='Which test to run. Options are: all, post, pre_post, rtm, rtm_gpg, rgm. \

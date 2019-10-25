@@ -241,6 +241,7 @@ def run_test(args, axs, plt_count):
     CRED = "\x1b[1;31m"
     CGREEN = "\x1b[1;32m"
     CYELLOW = "\x1b[1;33m"
+    CBLUE = "\x1b[1;34m"
     CEND = "\33[0m"
 
     # plt.figure() # Open a new figure for each test (only in all tests mode).
@@ -374,7 +375,7 @@ def run_test(args, axs, plt_count):
             print(CGREEN + "Test successful. Test number: ", iteration, CEND)
         # import code
         # code.interact(local=locals())
-    print("Finished '{}' test. Total tests run: {}".format(args.test, args.loops))
+    print(CBLUE);print("Finished '{}' test. Total tests run: {}".format(args.test, args.loops));print(CEND)
     # plt.pause(0.001)
     # plt.show(block=False)
     # plt.show()

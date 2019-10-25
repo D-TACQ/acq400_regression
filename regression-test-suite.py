@@ -452,6 +452,8 @@ def run_main():
 
             for trg in all_trgs:
                 args.trg = trg
+                if test == 'rgm' and trg == [1,0,0]:
+                    continue
 
                 if test == "post": # Don't need any events for post mode.
                     args.event = "N/A"
@@ -474,6 +476,8 @@ def run_main():
         plt_count = -1
 
         for trg in all_trgs:
+            if args.test == 'rgm' and trg == [1,0,0]:
+                continue
             args.trg = trg
             if args.test == "post": # Don't need any events for post mode.
                 args.event = "N/A"
@@ -502,7 +506,6 @@ def run_main():
     elif args.event == "all":
         args.trg = args.trg.split(",")
         args.trg = [int(i) for i in args.trg]
-        print("Hello world!")
         fig, axs = create_fig(args, args.test)
         plt_count = -1
         for event in all_events:

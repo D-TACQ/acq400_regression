@@ -399,13 +399,13 @@ def run_main():
     desc = "\n\nacq400_regression tests. For argument info run: \n\n" \
     "./regression-test-suite.py -h \n\n" \
     "For Usage examples see below:\n\n" \
-    "python3 regression-test-suite.py --test='all' --sig_gen_name='10.12.196.174'" \
+    "python3 regression-test-suite.py --test='all' --sig_gen_name='10.12.196.174' " \
     "--channels=[[1,2]] --demux=0 --show_es=1 acq1001_084\n" \
     "\n\n" \
-    "python3 regression-test-suite.py --test='pre_post' --trg='1,0,1' --event='all'" \
+    "python3 regression-test-suite.py --test='pre_post' --trg='1,0,1' --event='all' " \
     "--sig_gen_name='10.12.196.174' --channels=[[1,2]] --demux=0 --show_es=1 acq1001_084\n" \
     "\n\n" \
-    "python3 regression-test-suite.py --test='pre_post' --trg='all' --event='1,0,1'" \
+    "python3 regression-test-suite.py --test='pre_post' --trg='all' --event='1,0,1' " \
     "--sig_gen_name='10.12.196.174' --channels=[[1,2]] --demux=0 --show_es=1 acq1001_084 \n\n"
 
     if len(sys.argv) < 2:

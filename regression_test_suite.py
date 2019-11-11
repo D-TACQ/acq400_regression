@@ -31,6 +31,7 @@ import socket
 from future import builtins
 import matplotlib.pyplot as plt
 import sys
+import regression_analysis
 
 
 def create_fig(args, test, all=False):
@@ -224,7 +225,7 @@ def show_es(events, uuts):
 def save_data(uuts):
     for uut in uuts:
         data = uut.read_muxed_data()
-        data[0].tofile("{}_shot_data".format(uut.s0.HN))
+        data.tofile("{}_shot_data".format(uut.s0.HN))
     return None
 
 
@@ -275,6 +276,7 @@ def run_test(args, axs, plt_count):
     for iteration in list(range(1, args.loops+1)):
         data = []
         events = []
+        sample_counter = []
         # plt.clf()
         print("event DEBUG: ", args.event)
         for index, uut in reversed(list(enumerate(uuts))):
@@ -341,7 +343,9 @@ def run_test(args, axs, plt_count):
                 data.append(uut.read_channels(tuple(channels[index])))
             else:
                 data.append(uut.read_channels((0), -1))
+                sample_counter.append(regression_analysis.extract_sample_counter(data[index], int(uut.get_ai_channels()), uut.nchan()))
             events.append(uut.get_es_indices(human_readable=1, return_hex_string=1))
+        ideal_data = regression_analysis.get_ideal_data(args.test, args.trg, args.event)
 
         if args.demux == 0:
             success_flag = check_es(events)
@@ -350,6 +354,14 @@ def run_test(args, axs, plt_count):
             save_data(uuts)
             for index, data_set in enumerate(data):
                 for ch in channels[index]:
+                    channel_data = np.array(data_set[0][ch-1::uuts[index].nchan()])
+                    # sample_counter = np.array(data_set[0][ch-1::uuts[index].nchan()])
+                    result = regression_analysis.compare(channel_data, ideal_data)
+                    spad_test = regression_analysis.check_sample_counter(sample_counter[index], args.test)
+                    if spad_test != []:
+                        print("SPAD TEST FAILED!")
+                    else:
+                        print("SPAD TEST PASSED!")
                     try:
                         axs[plt_count].plot(data_set[0][ch-1::uuts[index].nchan()])
                         axs[plt_count].set_title("Test: {} Runs: {} Trg: {} Event: {}".format(args.test, args.loops, args.trg, args.event))
@@ -360,7 +372,8 @@ def run_test(args, axs, plt_count):
         else:
             for data_set in data:
                 for ch in data_set:
-                    # plt.plot(ch)
+                    result = regression_analysis.compare(ch, ideal_data)
+
                     try:
                         axs[plt_count].plot(ch)
                         axs[plt_count].grid(True)

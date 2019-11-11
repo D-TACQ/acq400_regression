@@ -158,4 +158,5 @@ def extract_sample_counter(data, aichan, nchan):
 
 
 def pre_post_anomaly_detect():
-    
+    return None
+

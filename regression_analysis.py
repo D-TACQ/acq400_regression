@@ -16,6 +16,18 @@ CBLUE = "\x1b[1;34m"
 CEND = "\33[0m"
 
 
+def get_post_ideal_wave(trg):
+
+    if trg == [1,0,0]:
+        ideal_wave = 1
+    elif trg == [1,1,0]:
+        ideal_wave = 2
+    elif trg == [1,1,1]:
+        ideal_wave = 3
+
+    return None
+
+
 def get_pre_post_ideal_wave(polarity=0, wave_length=20000, full_length=150000):
     """
     Returns a np array of scale 1, which contains a perfect pre_post array,
@@ -45,6 +57,7 @@ def get_ideal_data(test, trg, event):
     and the event types.
     """
     if test == "post":
+        ideal_data = get_post_ideal_wave(trg)
         return None
 
     elif test == "pre_post":
@@ -80,6 +93,10 @@ def compare(real_data, ideal_data):
     """
 
     """
+    if type(ideal_data) is not np.ndarray:
+        print("Data analysis not available for this capture mode yet.")
+        return True
+
     if real_data.shape[-1] != ideal_data.shape[-1]:
         print("Data passed to this function is not the correct shape.")
         print("Shape of real_data should be {} and is actually {}."
@@ -158,5 +175,7 @@ def extract_sample_counter(data, aichan, nchan):
 
 
 def pre_post_anomaly_detect():
+    from sklearn.ensemble import IsolationForest
+
     return None
 

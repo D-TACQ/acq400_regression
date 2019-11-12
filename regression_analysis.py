@@ -179,3 +179,15 @@ def pre_post_anomaly_detect():
 
     return None
 
+
+def get_agg_chans(uut):
+    """
+    Returns the number of channels contained in the sites in the aggregator.
+    """
+    channels = 0
+    agg_sites = uut.s0.aggregator.split(" ")[1].split("=")[1].split(",")
+    agg_sites = [int(s) for s in agg_sites]
+    for site in agg_sites:
+        channels = channels + int(getattr(getattr(uut, "s{}".format(site)), "NCHAN"))
+
+    return int(channels)

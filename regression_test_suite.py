@@ -343,7 +343,8 @@ def run_test(args, axs, plt_count):
                 data.append(uut.read_channels(tuple(channels[index])))
             else:
                 data.append(uut.read_channels((0), -1))
-                sample_counter.append(regression_analysis.extract_sample_counter(data[index], int(uut.get_ai_channels()), uut.nchan()))
+                sample_counter.append(regression_analysis.extract_sample_counter(data[index], regression_analysis.get_agg_chans(uut), uut.nchan()))
+                # sample_counter.append(regression_analysis.extract_sample_counter(data[index], int(uut.get_ai_channels()), uut.nchan()))
             events.append(uut.get_es_indices(human_readable=1, return_hex_string=1))
         ideal_data = regression_analysis.get_ideal_data(args.test, args.trg, args.event)
 

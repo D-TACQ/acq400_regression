@@ -104,7 +104,10 @@ def create_rgm_stl():
 
 def calculate_frequency(args, uut, divisor):
     # calculate a reasonable frequency from the clock speed of the master uut.
-    clk_freq = (int(float(uut.s0.SIG_CLK_S1_FREQ.split(" ")[1])))
+    if args.is_43X:
+        clk_freq = (int(float(uut.s1.ACQ43X_SAMPLE_RATE.split(" ")[1])))
+    else:
+        clk_freq = (int(float(uut.s0.SIG_CLK_S1_FREQ.split(" ")[1])))
     print("\n\nSample Rate = ",clk_freq,"\n\n")
     freq = clk_freq / divisor
     if int(freq) == 0 :
@@ -259,6 +262,7 @@ def run_test(args, axs, plt_count):
 
     for uut in args.uuts:
         uut = acq400_hapi.Acq400(uut)
+
         uut.s0.set_abort
         uut.s0.transient = "DEMUX={}".format(args.demux)
         # check_master_slave(args, uut)
@@ -268,6 +272,7 @@ def run_test(args, axs, plt_count):
         uut.s0.run0 = agg_before
         uuts.append(uut)
 
+    args.is_43X = uuts[0].s1.MODEL.startswith("ACQ43")
 
     sig_gen = socket.socket()
     sig_gen.connect((args.sig_gen_name, 5025))

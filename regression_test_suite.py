@@ -346,7 +346,7 @@ def run_test(args, axs, plt_count):
                 sample_counter.append(regression_analysis.extract_sample_counter(data[index], regression_analysis.get_agg_chans(uut), uut.nchan()))
                 # sample_counter.append(regression_analysis.extract_sample_counter(data[index], int(uut.get_ai_channels()), uut.nchan()))
             events.append(uut.get_es_indices(human_readable=1, return_hex_string=1))
-        ideal_data = regression_analysis.get_ideal_data(args.test, args.trg, args.event)
+        # ideal_data = regression_analysis.get_ideal_data(args.test, args.trg, args.event)
 
         if args.demux == 0:
             success_flag = check_es(events)
@@ -356,6 +356,7 @@ def run_test(args, axs, plt_count):
             for index, data_set in enumerate(data):
                 for ch in channels[index]:
                     channel_data = np.array(data_set[0][ch-1::uuts[index].nchan()])
+                    ideal_data = regression_analysis.get_ideal_data(args.test, args.trg, args.event, data=channel_data)
                     # sample_counter = np.array(data_set[0][ch-1::uuts[index].nchan()])
                     result = regression_analysis.compare(channel_data, ideal_data)
                     spad_test = regression_analysis.check_sample_counter(sample_counter[index], args.test)

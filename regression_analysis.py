@@ -22,11 +22,7 @@ def get_soft_trg_ideal(data):
     first_zc = zero_crossings[0]
     crossing_pos = 0 if (data[first_zc-40] < 0 and data[first_zc+40] > 0) else np.pi
 
-    print("DEBUG: crossing_pos = {}".format(crossing_pos))
-    print("DEBUG: first_zc = {}".format(first_zc))
     start_pos = crossing_pos - ((first_zc)/20000) * 2*np.pi
-    # print("DEBUG: first_zc = ".format(first_zc))
-    print("DEBUG: STARTPOS = {}".format(start_pos))
     x = np.linspace(start_pos, start_pos + 10*np.pi, 100000)
     y = np.sin(x)
     return y

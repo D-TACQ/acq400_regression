@@ -263,6 +263,9 @@ def run_test(args, axs, plt_count):
         uut.s0.transient = "DEMUX={}".format(args.demux)
         # check_master_slave(args, uut)
         uut.s0.transient # print transient config
+        agg_before = uut.s0.aggregator.split(" ")[1].split("=")[1]
+        uut.s0.spad = 1,8,0
+        uut.s0.run0 = agg_before
         uuts.append(uut)
 
 

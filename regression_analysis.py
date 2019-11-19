@@ -17,6 +17,12 @@ CEND = "\33[0m"
 
 
 def get_soft_trg_ideal(data):
+    """
+    Forms a perfect sine wave for a soft trigger run. Takes the channel data
+    as an argument so that the first zero crossing can be found, and the starting
+    position in radians can be calculated. With this info the sine wave can be
+    generated.
+    """
     # wave = np.zeros(len(data))
     zero_crossings = np.where(np.diff(np.sign(data)))[0]
     first_zc = zero_crossings[0]
@@ -29,7 +35,10 @@ def get_soft_trg_ideal(data):
 
 
 def get_post_ideal_wave(trg, wave_length=20000, full_length=100000, data=[]):
-
+    """
+    A function that returns the ideal waves for each trigger type in the POST
+    config.
+    """
     x = np.linspace(0, 2 * np.pi, wave_length)
     y1 = np.sin(x)
     y2 = np.zeros(full_length)

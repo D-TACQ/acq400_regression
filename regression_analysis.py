@@ -16,16 +16,43 @@ CBLUE = "\x1b[1;34m"
 CEND = "\33[0m"
 
 
-def get_post_ideal_wave(trg):
+def get_soft_trg_ideal(data):
+    """
+    Forms a perfect sine wave for a soft trigger run. Takes the channel data
+    as an argument so that the first zero crossing can be found, and the starting
+    position in radians can be calculated. With this info the sine wave can be
+    generated.
+    """
+    # wave = np.zeros(len(data))
+    zero_crossings = np.where(np.diff(np.sign(data)))[0]
+    first_zc = zero_crossings[0]
+    crossing_pos = 0 if (data[first_zc-40] < 0 and data[first_zc+40] > 0) else np.pi
 
+    start_pos = crossing_pos - ((first_zc)/20000) * 2*np.pi
+    x = np.linspace(start_pos, start_pos + 10*np.pi, 100000)
+    y = np.sin(x)
+    return y
+
+
+def get_post_ideal_wave(trg, wave_length=20000, full_length=100000, data=[]):
+    """
+    A function that returns the ideal waves for each trigger type in the POST
+    config.
+    """
+    x = np.linspace(0, 2 * np.pi, wave_length)
+    y1 = np.sin(x)
+    y2 = np.zeros(full_length)
+
+    print(trg)
     if trg == [1,0,0]:
-        ideal_wave = 1
-    elif trg == [1,1,0]:
-        ideal_wave = 2
+        ideal_wave = y2
+    elif trg == [1,0,1]:
+        y2[0:wave_length] = y1
+        ideal_wave = y2
     elif trg == [1,1,1]:
-        ideal_wave = 3
+        ideal_wave = get_soft_trg_ideal(data)
 
-    return None
+    return ideal_wave
 
 
 def get_pre_post_ideal_wave(polarity=0, wave_length=20000, full_length=150000):
@@ -51,14 +78,14 @@ def get_pre_post_ideal_wave(polarity=0, wave_length=20000, full_length=150000):
     return y2
 
 
-def get_ideal_data(test, trg, event):
+def get_ideal_data(test, trg, event, data=[]):
     """
     Returns the ideal data for the scenario, based on the test, the trigger
     and the event types.
     """
     if test == "post":
-        ideal_data = get_post_ideal_wave(trg)
-        return None
+        ideal_data = get_post_ideal_wave(trg, data=data)
+        return ideal_data
 
     elif test == "pre_post":
         ideal_data = get_pre_post_ideal_wave(polarity=event[2])
@@ -114,8 +141,8 @@ def compare(real_data, ideal_data):
     print("Data comparison result: {}".format(comparison))
     if not comparison:
 
-        plt.plot(ideal_data)
         plt.plot(real_data)
+        plt.plot(ideal_data)
         plt.show()
         # exit(1)
     return comparison
@@ -155,6 +182,7 @@ def check_sample_counter(sample_counter, test="pre_post"):
                 big_diffs.append((pos,diff))
         if len(big_diffs) != 0:
             print(CRED, "Discontinuities in sample counter detected: {}".format(big_diffs), CEND)
+            exit(1)
         return big_diffs
 
 
@@ -176,7 +204,7 @@ def extract_sample_counter(data, aichan, nchan):
 
 def pre_post_anomaly_detect():
     from sklearn.ensemble import IsolationForest
-
+    # s =
     return None
 
 

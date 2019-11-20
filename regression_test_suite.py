@@ -265,32 +265,16 @@ def get_module_voltage(uut):
     return scale
 
 
-def run_test(args, axs, plt_count):
+def run_test(args, axs, plt_count, uuts):
     CRED = "\x1b[1;31m"
     CGREEN = "\x1b[1;32m"
     CYELLOW = "\x1b[1;33m"
     CBLUE = "\x1b[1;34m"
     CEND = "\33[0m"
 
-    # plt.figure() # Open a new figure for each test (only in all tests mode).
-
-    # fig, axs = plt.subplots(1, 6, sharey=True)
-    uuts = []
     success_flag = True
     channels = eval(args.channels[0])
     verify_inputs(args)
-
-    for uut in args.uuts:
-        uut = acq400_hapi.Acq400(uut)
-
-        uut.s0.set_abort
-        uut.s0.transient = "DEMUX={}".format(args.demux)
-        # check_master_slave(args, uut)
-        uut.s0.transient # print transient config
-        agg_before = uut.s0.aggregator.split(" ")[1].split("=")[1]
-        uut.s0.spad = 1,8,0
-        uut.s0.run0 = agg_before
-        uuts.append(uut)
 
     if args.wave_scale == 'auto':
         scale = get_module_voltage(uuts[0])
@@ -513,6 +497,20 @@ def run_main():
     all_trgs = [[1,0,0], [1,0,1], [1,1,1]]
     all_events = [[1,0,0], [1,0,1]] # Not interested in any soft events.
 
+    uuts = []
+
+    for uut in args.uuts:
+        uut = acq400_hapi.Acq400(uut)
+
+        uut.s0.set_abort
+        uut.s0.transient = "DEMUX={}".format(args.demux)
+        # check_master_slave(args, uut)
+        uut.s0.transient # print transient config
+        agg_before = uut.s0.aggregator.split(" ")[1].split("=")[1]
+        uut.s0.spad = 1,8,0
+        uut.s0.run0 = agg_before
+        uuts.append(uut)
+
     if args.test.lower() == "all":
         print("You have selected to run all tests.")
         print("Now running each test {} times with ALL triggers " \
@@ -534,7 +532,7 @@ def run_main():
                     print("\nNow running: {} test with" \
                                         " trigger: {}\n".format(test, args.trg))
                     plt_count += 1
-                    run_test(args, axs, plt_count)
+                    run_test(args, axs, plt_count, uuts)
                 else:
 
                     for event in all_events:
@@ -542,7 +540,7 @@ def run_main():
                         print("\nNow running: {} test with trigger: {} and" \
                         " event: {}\n".format(test, args.trg, args.event))
                         plt_count += 1
-                        run_test(args, axs, plt_count)
+                        run_test(args, axs, plt_count, uuts)
             plt.show()
 
     elif args.trg == "all" and args.event == "all":
@@ -558,14 +556,14 @@ def run_main():
                 print("\nNow running: {} test with" \
                                     " trigger: {}\n".format(args.test, args.trg))
                 plt_count += 1
-                run_test(args, axs, plt_count)
+                run_test(args, axs, plt_count, uuts)
             else:
                 for event in all_events:
                     args.event = event
                     print("\nNow running: {} test with trigger: {} and" \
                     " event: {}\n".format(args.test, args.trg, args.event))
                     plt_count += 1
-                    run_test(args, axs, plt_count)
+                    run_test(args, axs, plt_count, uuts)
         plt.show()
 
     elif args.trg == "all":
@@ -574,7 +572,7 @@ def run_main():
         for trg in all_trgs:
             args.trg = trg
             plt_count += 1
-            run_test(args, axs, plt_count)
+            run_test(args, axs, plt_count, uuts)
         plt.show()
 
     elif args.event == "all":
@@ -585,7 +583,7 @@ def run_main():
         for event in all_events:
             args.event = event
             plt_count += 1
-            run_test(args, axs, plt_count)
+            run_test(args, axs, plt_count, uuts)
         plt.show()
 
     else:
@@ -597,7 +595,7 @@ def run_main():
         args.event = [int(i) for i in args.event]
         plt_count = -1
         plt_count += 1
-        run_test(args, axs, plt_count)
+        run_test(args, axs, plt_count, uuts)
     plt.show()
 
 

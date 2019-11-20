@@ -278,6 +278,8 @@ def run_test(args, axs, plt_count, uuts):
 
     if args.wave_scale == 'auto':
         scale = get_module_voltage(uuts[0])
+    else :
+        scale = args.wave_scale
     args.is_43X = uuts[0].s1.MODEL.startswith("ACQ43")
 
     sig_gen = socket.socket()

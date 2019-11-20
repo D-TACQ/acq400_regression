@@ -24,6 +24,7 @@ def get_soft_trg_ideal(data):
     generated.
     """
     # wave = np.zeros(len(data))
+    data = data - np.mean(data)
     zero_crossings = np.where(np.diff(np.sign(data)))[0]
     first_zc = zero_crossings[0]
     crossing_pos = 0 if (data[first_zc-40] < 0 and data[first_zc+40] > 0) else np.pi
@@ -108,10 +109,11 @@ def scale_wave(real_data, ideal_data):
     Returns a wave that is scaled to the max of another. This is useful for
     scaling the array returned by get_pre_post_ideal_wave.
     """
+    real_data = real_data - np.mean(real_data)
     real_max = np.amax(real_data)
+    real_min = np.amin(real_data)
 
-    scaled_data = ideal_data * real_max
-    scaled_data = scaled_data.astype(np.int16)
+    scaled_data = ideal_data * ((real_max - real_min) / 2)
 
     return scaled_data
 

@@ -150,10 +150,10 @@ def config_gpg(uut, args, trg=1):
     return True
 
 
-def configure_sig_gen(sig_gen, args, freq):
+def configure_sig_gen(sig_gen, args, freq, scale):
     print("Configuring sig gen.")
 
-    sig_gen.send("VOLT 1\n".encode())
+    sig_gen.send("VOLT {}\n".format(scale).encode())
     sig_gen.send("OUTP:SYNC ON\n".encode())
     freq_string = "FREQ {}\n".format(freq)
     sig_gen.send(freq_string.encode())
@@ -245,6 +245,26 @@ def custom_test(args, uuts):
     return None
 
 
+def get_module_voltage(uut):
+    """
+    Query the module for part_num and check if there is a voltage specified in
+    the part_num. If there is a voltage specified then use that, otherwise,
+    if the module is an acq48X then use 2.5V, else use 10V.
+    """
+    part_num = uut.s1.PART_NUM
+    if "V" in part_num:
+        for item in part_num.split("-"):
+            if "V" in item:
+                scale = int(item.split("V")[0])
+                break
+    else:
+        if part_num.startswith("ACQ48"):
+            scale = 2.5
+        else:
+            scale = 10
+    return scale
+
+
 def run_test(args, axs, plt_count):
     CRED = "\x1b[1;31m"
     CGREEN = "\x1b[1;32m"
@@ -272,6 +292,8 @@ def run_test(args, axs, plt_count):
         uut.s0.run0 = agg_before
         uuts.append(uut)
 
+    if args.wave_scale == 'auto':
+        scale = get_module_voltage(uut)
     args.is_43X = uuts[0].s1.MODEL.startswith("ACQ43")
 
     sig_gen = socket.socket()
@@ -279,7 +301,7 @@ def run_test(args, axs, plt_count):
 
     if args.config_sig_gen == 1:
         freq = calculate_frequency(args, uuts[0], args.clock_divisor)
-        configure_sig_gen(sig_gen, args, freq)
+        configure_sig_gen(sig_gen, args, freq, scale)
 
     for iteration in list(range(1, args.loops+1)):
         data = []
@@ -478,6 +500,10 @@ def run_main():
     parser.add_argument('--custom_test', default=0, type=int,
     help="This argument allows the user to write a custom test in the custom \
     test function. Default is disabled (0).")
+
+    parser.add_argument('--wave_scale', default='auto', type=str,
+    help="What scale to make the input wave. Auto is default and any other setting \
+    should be of the form '5V'")
 
     parser.add_argument('uuts', nargs='+', help="Names of uuts to test.")
 

@@ -221,3 +221,38 @@ def get_agg_chans(uut):
         channels = channels + int(getattr(getattr(uut, "s{}".format(site)), "NCHAN"))
 
     return int(channels)
+def test_info(args, uut):
+    """
+    A function to store information about the test to a file.
+    Information stored:
+
+    - Hostname.
+    - Firmware
+    - FPGA.
+    - list-sites.
+    - Tests run.
+    - Time.
+    """
+
+    hostname = "Hostname: " + uut.s0.HN
+    # firmware = uut.s0.FW
+    fpga = "FPGA: " + uut.s0.fpga_version
+    software_version = "FW Version: " + uut.s0.software_version
+    aggregator = "Aggregator: " + uut.s0.aggregator
+    test_time = "Time: " + time.asctime()
+    sites = []
+
+    for num, site in enumerate(uut.s0.sites.split(",")):
+        MODEL = getattr(getattr(uut, "s{}".format(site)), "MODEL")
+        PART_NUM = getattr(getattr(uut, "s{}".format(site)), "PART_NUM")
+        SERIAL = getattr(getattr(uut, "s{}".format(site)), "SERIAL")
+        sites.append("Sites: \n{}, {}, {}, {}".format(site, MODEL, PART_NUM, SERIAL))
+
+    breaker = "--------------------"
+    # print(*(site for site in sites))
+    string_to_print = "{}\n\n" * (5+len(sites))
+    string_to_print = string_to_print.format(test_time, hostname, fpga, \
+    software_version, aggregator, *(site for site in sites))
+    print(string_to_print)
+    return None
+

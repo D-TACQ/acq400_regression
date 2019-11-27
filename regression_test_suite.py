@@ -599,6 +599,7 @@ def run_main():
         plt_count += 1
         run_test(args, axs, plt_count, uuts)
     plt.show()
+    regression_analysis.test_info(args, uut)
 
 
 if __name__ == '__main__':

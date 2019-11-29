@@ -240,6 +240,8 @@ def test_info(args, uut):
     software_version = "FW Version: " + uut.s0.software_version
     aggregator = "Aggregator: " + uut.s0.aggregator
     test_time = "Time: " + time.asctime()
+    run_count = "Loops of each test run: " + str(args.loops)
+
     sites = []
 
     for num, site in enumerate(uut.s0.sites.split(",")):
@@ -248,11 +250,20 @@ def test_info(args, uut):
         SERIAL = getattr(getattr(uut, "s{}".format(site)), "SERIAL")
         sites.append("Sites: \n{}, {}, {}, {}".format(site, MODEL, PART_NUM, SERIAL))
 
-    breaker = "--------------------"
-    # print(*(site for site in sites))
-    string_to_print = "{}\n\n" * (5+len(sites))
-    string_to_print = string_to_print.format(test_time, hostname, fpga, \
+
+    string_to_print = "{}\n\n" * (6+len(sites))
+    string_to_print = string_to_print.format(test_time, run_count, hostname, fpga, \
     software_version, aggregator, *(site for site in sites))
     print(string_to_print)
+
+    dir = "./results/{}/".format(MODEL)
+    import os
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
+    import datetime
+    file = open(dir + fpga.split(" ")[1] + "_" + datetime.datetime.now().strftime("%y%m%d%H%M"), "a")
+    file.write(string_to_print)
+    file.close()
     return None
 

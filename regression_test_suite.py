@@ -279,8 +279,6 @@ def run_test(args, axs, plt_count, uuts):
 
     if args.wave_scale == 'auto':
         scale = get_module_voltage(uuts[0])
-    else :
-        scale = args.wave_scale
     args.is_43X = uuts[0].s1.MODEL.startswith("ACQ43")
 
     sig_gen = socket.socket()
@@ -415,9 +413,13 @@ def run_test(args, axs, plt_count, uuts):
             exit(1)
         else:
             print(CGREEN + "Test successful. Test number: ", iteration, CEND)
+            data = []
+            events = []
+            sample_counter = []
         # import code
         # code.interact(local=locals())
     print(CBLUE);print("Finished '{}' test. Total tests run: {}".format(args.test, args.loops));print(CEND)
+
     # plt.pause(0.001)
     # plt.show(block=False)
     # plt.show()
@@ -573,6 +575,8 @@ def run_main():
     elif args.trg == "all":
         fig, axs = create_fig(args, args.test)
         plt_count = -1
+        args.event = args.event.split(",")
+        args.event = [int(i) for i in args.event]
         for trg in all_trgs:
             args.trg = trg
             plt_count += 1

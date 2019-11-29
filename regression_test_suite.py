@@ -32,6 +32,7 @@ from future import builtins
 import matplotlib.pyplot as plt
 import sys
 import regression_analysis
+import regression_setup
 
 
 def create_fig(args, test, all=False):
@@ -294,48 +295,49 @@ def run_test(args, axs, plt_count, uuts):
         events = []
         sample_counter = []
         # plt.clf()
-        print("event DEBUG: ", args.event)
         for index, uut in reversed(list(enumerate(uuts))):
 
             if args.test == "pre_post":
                 if index == 0:
-                    uut.configure_pre_post("master", trigger=args.trg, event=args.event)
+                    regression_setup.configure_pre_post(uut, "master", trigger=args.trg, event=args.event)
                 else:
                     # uut.s0.sync_role = "slave"
-                    uut.configure_pre_post("slave")
+                    regression_setup.configure_pre_post(uut, "slave")
 
             elif args.test == "post":
                 if index == 0:
-                    uut.configure_post("master", trigger=args.trg)
+                    regression_setup.configure_post(uut, "master", trigger=args.trg)
                 else:
-                    uut.configure_post("slave", trigger=args.trg)
+                    regression_setup.configure_post(uut, "slave", trigger=args.trg)
 
             elif args.test == "rtm":
                 if index == 0:
-                    uut.configure_rtm("master", trigger=args.trg, event=args.event)
+                    regression_setup.configure_rtm(uut, "master", trigger=args.trg, event=args.event)
                 else:
-                    uut.configure_rtm("slave")
+                    regression_setup.configure_rtm(uut, "slave")
 
             elif args.test == "rtm_gpg":
                 if index == 0:
-                    uut.configure_rtm("master", trigger=args.trg, gpg=1, event=args.event)
+                    regression_setup.configure_rtm(uut, "master", trigger=args.trg, gpg=1, event=args.event)
                     gpg_config_success = config_gpg(uut, args, trg=0)
                     if gpg_config_success != True:
                         print("Breaking out of test {} now.".format(args.test))
                         break
                 else:
-                    uut.configure_rtm("slave")
+                    regression_setup.configure_rtm(uut, "slave")
 
             elif args.test == "rgm":
                 if index == 0:
-                    uut.configure_rgm("master", trigger=args.trg, post=75000, gpg=1)
+                    regression_setup.configure_rgm(uut, "master", trigger=args.trg, post=75000, gpg=1)
                     gpg_config_success = config_gpg(uut, args, trg=0)
                     if gpg_config_success != True:
                         print("Breaking out of test {} now.".format(args.test))
                         break
                 else:
                     uut.s0.sync_role = "slave"
-                    uut.configure_rgm("slave", post=75000)
+                    regression_setup.configure_rgm(uut, "slave", post=75000)
+
+            regression_analysis.check_config(args, uut)
 
             uut.s0.set_arm
             uut.statmon.wait_armed()
@@ -374,7 +376,7 @@ def run_test(args, axs, plt_count, uuts):
                     channel_data = np.array(data_set[0][ch-1::uuts[index].nchan()])
                     ideal_data = regression_analysis.get_ideal_data(args.test, args.trg, args.event, data=channel_data)
                     # sample_counter = np.array(data_set[0][ch-1::uuts[index].nchan()])
-                    result = regression_analysis.compare(channel_data, ideal_data)
+                    result = regression_analysis.compare(channel_data, ideal_data, args.test, args.trg, args.event)
                     spad_test = regression_analysis.check_sample_counter(sample_counter[index], args.test)
                     if spad_test != []:
                         print("SPAD TEST FAILED!")
@@ -599,7 +601,7 @@ def run_main():
         plt_count += 1
         run_test(args, axs, plt_count, uuts)
     plt.show()
-    regression_analysis.test_info(args, uut)
+    # regression_analysis.test_info(args, uut)
 
 
 if __name__ == '__main__':

@@ -524,9 +524,12 @@ def run_main():
 
         for test in all_tests:
             args.test = test
-            fig, axs = create_fig(args, test, all=True)
+            # fig, axs = create_fig(args, test, all=True)
             # fig, axs = plt.subplots(1, 6, sharey=True)
-            plt_count = -1
+            fig = plt.figure()
+            # axs = fig.add_subplot(111)
+            plt_count = 1
+
 
             for trg in all_trgs:
                 args.trg = trg
@@ -535,19 +538,32 @@ def run_main():
 
                 if test == "post": # Don't need any events for post mode.
                     args.event = "N/A"
+                    n = len(fig.axes)
+                    for ii in range(n):
+                        fig.axes[ii].change_geometry(plt_count,1,ii+1)
+                    axs = fig.add_subplot(plt_count,1,plt_count)
                     print("\nNow running: {} test with" \
                                         " trigger: {}\n".format(test, args.trg))
-                    plt_count += 1
                     run_test(args, axs, plt_count, uuts)
+                    plt_count += 1
+                    # n = len(fig.axes)
+                    # for ii in range(n):
+                    #     fig.axes[ii].change_geometry(plt_count,1,ii+1)
                 else:
 
                     for event in all_events:
+                        n = len(fig.axes)
+                        for ii in range(n):
+                            fig.axes[ii].change_geometry(plt_count,1,ii+1)
+                        axs = fig.add_subplot(plt_count,1,plt_count)
                         args.event = event
                         print("\nNow running: {} test with trigger: {} and" \
                         " event: {}\n".format(test, args.trg, args.event))
-                        plt_count += 1
                         run_test(args, axs, plt_count, uuts)
+                        plt_count += 1
+                        # fig.axes[0].change_geometry(plt_count,1,plt_count-1)
             plt.show()
+        regression_analysis.test_info(args, uut)
 
     elif args.trg == "all" and args.event == "all":
         fig, axs = create_fig(args, args.test)

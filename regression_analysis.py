@@ -7,6 +7,7 @@ suite.
 
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 
 CRED = "\x1b[1;31m"
@@ -44,7 +45,6 @@ def get_post_ideal_wave(trg, wave_length=20000, full_length=100000, data=[]):
     y1 = np.sin(x)
     y2 = np.zeros(full_length)
 
-    print(trg)
     if trg == [1,0,0]:
         ideal_wave = y2
     elif trg == [1,0,1]:
@@ -85,7 +85,7 @@ def get_ideal_data(test, trg, event, data=[]):
     and the event types.
     """
     if test == "post":
-        ideal_data = get_post_ideal_wave(trg, data=data)
+        ideal_data = get_post_ideal_wave(trg, data=data, full_length=data.shape[-1])
         return ideal_data
 
     elif test == "pre_post":
@@ -118,7 +118,7 @@ def scale_wave(real_data, ideal_data):
     return scaled_data
 
 
-def compare(real_data, ideal_data):
+def compare(real_data, ideal_data, test, trg, event):
     """
 
     """
@@ -139,7 +139,13 @@ def compare(real_data, ideal_data):
     # real_data[10000] = 5000
 
     ideal_data = scale_wave(real_data, ideal_data)
-    comparison = np.allclose(real_data, ideal_data, atol=4000000, rtol=0)
+    # size_test_result = size_test(test, trg, event, real_data)
+    # if not size_test_result:
+    #     print(CRED, "INCORRECT SIZE DETECTED. Test failed.", CEND)
+    #     plt.plot(real_data)
+    #     plt.plot(ideal_data)
+    #     plt.show()
+    comparison = np.allclose(real_data, ideal_data, atol=1000, rtol=0)
     print("Data comparison result: {}".format(comparison))
     if not comparison:
 
@@ -156,17 +162,6 @@ def check_sample_counter(sample_counter, test="pre_post"):
     each element is one greater than the last. If yes return True, else find
     the gaps and append to a file.
     """
-
-    # ideal_sample_counter = np.arange(sample_counter.shape[-1])
-    # sample_counter = sample_counter - sample_counter[0]
-    # print(sample_counter)
-    # print(ideal_sample_counter)
-    # comparison = np.allclose(sample_counter, ideal_sample_counter)
-    #
-    # if not comparison:
-    #     diffs = sample_counter - ideal_sample_counter
-    #     discontinuity_sizes = np.nonzero(diffs)[0]
-    #     print("Discontinuity found in the sample counter of size {}".format(discontinuity_sizes))
 
     diffs = np.diff(sample_counter)
     # if np.count(diffs, 1) == diffs.shape[-1]:
@@ -196,7 +191,6 @@ def extract_sample_counter(data, aichan, nchan):
     data = np.array(data)
     if data.dtype == np.int16:
         data = np.frombuffer(data.tobytes(), dtype=np.uint32)
-        print(nchan)
         sample_counter = data[int(aichan/2)::int(nchan/2)]
     else:
         sample_counter = data[nchan::nchan]

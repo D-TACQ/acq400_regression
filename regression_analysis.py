@@ -221,6 +221,47 @@ def get_agg_chans(uut):
         channels = channels + int(getattr(getattr(uut, "s{}".format(site)), "NCHAN"))
 
     return int(channels)
+
+
+def size_test(test, trg, event, wave):
+    """
+    Checks the size of a wave based on the specific test that is being run.
+    """
+    if test == "post":
+        if trg == [1,0,0]:
+            size = 0
+        else:
+            size = 2**15
+
+        if np.amax(wave) < size - 1000 or np.amax(wave) > size:
+            return False
+        else:
+            return True
+    else:
+        return True
+
+
+def check_config(args, uut):
+
+    # time.sleep(2)
+    trg = uut.s1.trg.split(" ")[0].split("=")[1].split(",")
+    trg = [ int(num) for num in trg ]
+    if trg != args.trg:
+        print(CYELLOW, "Trigger not taken!", CEND)
+        print("Trigger is: {}, should be: {}".format(trg, args.trg))
+        exit(1)
+
+    if args.test != "post" and args.test != "rgm":
+        print(args.test)
+        event = uut.s1.event0.split(" ")[0].split("=")[1].split(",")
+        event = [ int(num) for num in event ]
+        if event != args.event:
+            print(CYELLOW, "Event not taken!", CEND)
+            print("Event is: {}, should be: {}".format(event, args.event))
+            exit(1)
+    return None
+
+
 def test_info(args, uut):
     """
     A function to store information about the test to a file.

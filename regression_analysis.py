@@ -256,7 +256,7 @@ def check_config(args, uut):
     return None
 
 
-def test_info(args, uut):
+def test_info(args, uuts):
     """
     A function to store information about the test to a file.
     Information stored:
@@ -268,27 +268,29 @@ def test_info(args, uut):
     - Tests run.
     - Time.
     """
+    for uut in uuts:
+        hostname = "Hostname: " + uut.s0.HN
+        # firmware = uut.s0.FW
+        fpga = "FPGA: " + uut.s0.fpga_version
+        software_version = "FW Version: " + uut.s0.software_version
+        aggregator = "Aggregator: " + uut.s0.aggregator
+        test_time = "Time: " + time.asctime()
+        run_count = "Loops of each test run: " + str(args.loops)
 
-    hostname = "Hostname: " + uut.s0.HN
-    # firmware = uut.s0.FW
-    fpga = "FPGA: " + uut.s0.fpga_version
-    software_version = "FW Version: " + uut.s0.software_version
-    aggregator = "Aggregator: " + uut.s0.aggregator
-    test_time = "Time: " + time.asctime()
-    run_count = "Loops of each test run: " + str(args.loops)
+        sites = []
+        string_to_print = ''
 
-    sites = []
-
-    for num, site in enumerate(uut.s0.sites.split(",")):
-        MODEL = getattr(getattr(uut, "s{}".format(site)), "MODEL")
-        PART_NUM = getattr(getattr(uut, "s{}".format(site)), "PART_NUM")
-        SERIAL = getattr(getattr(uut, "s{}".format(site)), "SERIAL")
-        sites.append("Sites: \n{}, {}, {}, {}".format(site, MODEL, PART_NUM, SERIAL))
+        for num, site in enumerate(uut.s0.sites.split(",")):
+            MODEL = getattr(getattr(uut, "s{}".format(site)), "MODEL")
+            PART_NUM = getattr(getattr(uut, "s{}".format(site)), "PART_NUM")
+            SERIAL = getattr(getattr(uut, "s{}".format(site)), "SERIAL")
+            sites.append("Sites: \n{}, {}, {}, {}".format(site, MODEL, PART_NUM, SERIAL))
 
 
-    string_to_print = "{}\n\n" * (6+len(sites))
-    string_to_print = string_to_print.format(test_time, run_count, hostname, fpga, \
-    software_version, aggregator, *(site for site in sites))
+        string_to_print = string_to_print + "{}\n\n" * (6+len(sites))
+        string_to_print = string_to_print.format(test_time, run_count, hostname, fpga, \
+            software_version, aggregator, *(site for site in sites))
+        string_to_print = string_to_print + "\n----------------------\n"
     print(string_to_print)
 
     dir = "./results/{}/".format(MODEL)

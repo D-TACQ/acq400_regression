@@ -563,7 +563,7 @@ def run_main():
                         plt_count += 1
                         # fig.axes[0].change_geometry(plt_count,1,plt_count-1)
             plt.show()
-        regression_analysis.test_info(args, uut)
+        regression_analysis.test_info(args, uuts)
 
     elif args.trg == "all" and args.event == "all":
         fig, axs = create_fig(args, args.test)

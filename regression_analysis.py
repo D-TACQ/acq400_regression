@@ -17,6 +17,30 @@ CBLUE = "\x1b[1;34m"
 CEND = "\33[0m"
 
 
+def get_data(uuts, args, channels):
+    data = []
+    sample_counter = []
+    events = []
+
+    for index, uut in enumerate(uuts):
+        if args.demux == 1:
+            data.append(np.column_stack((uut.read_channels(tuple(channels[index])))))
+            # sample_counter.append()
+        else:
+            data.append(uut.read_channels((0), -1)[0])
+            print(data)
+            # sample_counter.append(regression_analysis.extract_sample_counter(data[index], regression_analysis.get_agg_chans(uut), uut.nchan()))
+            sample_counter.append(extract_sample_counter(data[index], get_agg_chans(uut), uut.nchan()))
+            data[index] = data[index].reshape((-1, int(uut.s0.NCHAN)))
+            data[index] = data[index][:,channels[index]]
+
+            # print(data[0].shape)
+            # sample_counter.append(regression_analysis.extract_sample_counter(data[index], int(uut.get_ai_channels()), uut.nchan()))
+        events.append(uut.get_es_indices(human_readable=1, return_hex_string=1))
+
+    return data, events, sample_counter
+
+
 def get_soft_trg_ideal(data):
     """
     Forms a perfect sine wave for a soft trigger run. Takes the channel data

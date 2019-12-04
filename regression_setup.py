@@ -140,3 +140,14 @@ def configure_rgm(uut, role, trigger=[1,0,1], event=[1,1,1], post="100000", gpg=
     uut.s0.SIG_EVENT_SRC_0 = 1 if gpg == 1 else 0
 
     return None
+
+
+def incr_axes(fig, plt_count):
+    """
+    A function that returns the axes after creating a new plot inside them.
+    """
+
+    n = len(fig.axes)
+    for ii in range(n):
+        fig.axes[ii].change_geometry(plt_count,1,ii+1)
+    return fig

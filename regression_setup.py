@@ -25,15 +25,15 @@ def configure_post(uut, role, trigger=[1,1,1], post=100000):
 
     slave_trigger = trigger.copy()
     slave_trigger[1] = 0
-    trigger = ' '.join([str(elem) + ',' for elem in trigger])
-    slave_trigger = ' '.join([str(elem) + ',' for elem in slave_trigger])
+    trigger = ''.join([str(elem) + ',' for elem in trigger])[0:-1]
+    slave_trigger = ''.join([str(elem) + ',' for elem in slave_trigger])[0:-1]
 
     uut.s1.trg = trigger if role == "master" else slave_trigger
     # trg = uut.s1.trg
 
     uut.s1.event0 = '0,0,0'
     uut.s1.rgm = '0,0,0'
-    uut.s0.SIG_EVENT_SRC_0 = 0
+    uut.s0.SIG_EVENT_SRC_0 = 'TRG'
 
     return None
 
@@ -58,16 +58,16 @@ def configure_pre_post(uut, role, trigger=[1,1,1], event=[1,1,1], pre=50000, pos
 
     slave_trigger = trigger.copy()
     slave_trigger[1] = 0
-    trigger = ' '.join([str(elem) + ',' for elem in trigger])
-    slave_trigger = ' '.join([str(elem) + ',' for elem in slave_trigger])
+    trigger = ''.join([str(elem) + ',' for elem in trigger])[0:-1]
+    slave_trigger = ''.join([str(elem) + ',' for elem in slave_trigger])[0:-1]
 
-    event = ' '.join([str(elem) + ',' for elem in event])
+    event = ''.join([str(elem) + ',' for elem in event])[0:-1]
 
     uut.s1.trg = trigger if role == "master" else slave_trigger
     uut.s1.event0 = event
     uut.s1.rgm = '0,0,0'
 
-    uut.s0.SIG_EVENT_SRC_0 = 0
+    uut.s0.SIG_EVENT_SRC_0 = 'TRG'
     return None
 
 
@@ -89,14 +89,14 @@ def configure_rtm(uut, role, trigger=[1,1,1], event=[1,1,1], post=50000, rtm_tra
     an Event for RTM).
     """
     uut.s0.transient = "PRE=0 POST={}".format(post)
-    uut.s1.rtm_translen = rtm_translen
+    uut.s1.RTM_TRANSLEN = rtm_translen
 
     slave_trigger = trigger.copy()
     slave_trigger[1] = 0
-    trigger = ' '.join([str(elem) + ',' for elem in trigger])
-    slave_trigger = ' '.join([str(elem) + ',' for elem in slave_trigger])
+    trigger = ''.join([str(elem) + ',' for elem in trigger])[0:-1]
+    slave_trigger = ''.join([str(elem) + ',' for elem in slave_trigger])[0:-1]
 
-    event = ' '.join([str(elem) + ',' for elem in event])
+    event = ''.join([str(elem) + ',' for elem in event])[0:-1]
 
     uut.s1.trg = trigger if role == "master" else slave_trigger
 
@@ -104,7 +104,7 @@ def configure_rtm(uut, role, trigger=[1,1,1], event=[1,1,1], post=50000, rtm_tra
 
     uut.s1.rgm = '3,0,1'
 
-    uut.s0.SIG_EVENT_SRC_0 = 1 if gpg == 1 else 0
+    uut.s0.SIG_EVENT_SRC_0 = 'GPG' if gpg == 1 else 'TRG'
 
     return None
 
@@ -128,8 +128,8 @@ def configure_rgm(uut, role, trigger=[1,0,1], event=[1,1,1], post="100000", gpg=
 
     slave_trigger = trigger.copy()
     slave_trigger[1] = 0
-    trigger = ' '.join([str(elem) + ',' for elem in trigger])
-    slave_trigger = ' '.join([str(elem) + ',' for elem in slave_trigger])
+    trigger = ''.join([str(elem) + ',' for elem in trigger])[0:-1]
+    slave_trigger = ''.join([str(elem) + ',' for elem in slave_trigger])[0:-1]
 
     uut.s1.trg = trigger if role == "master" else slave_trigger
 
@@ -137,7 +137,7 @@ def configure_rgm(uut, role, trigger=[1,0,1], event=[1,1,1], post="100000", gpg=
 
     uut.s1.rgm = '2,0,1'
 
-    uut.s0.SIG_EVENT_SRC_0 = 1 if gpg == 1 else 0
+    uut.s0.SIG_EVENT_SRC_0 = 'GPG' if gpg == 1 else 'TRG'
 
     return None
 

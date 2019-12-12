@@ -89,7 +89,7 @@ def configure_rtm(uut, role, trigger=[1,1,1], event=[1,1,1], post=50000, rtm_tra
     an Event for RTM).
     """
     uut.s0.transient = "PRE=0 POST={}".format(post)
-    uut.s1.rtm_translen = rtm_translen
+    uut.s1.RTM_TRANSLEN = rtm_translen
 
     slave_trigger = trigger.copy()
     slave_trigger[1] = 0

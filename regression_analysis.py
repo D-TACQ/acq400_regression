@@ -351,7 +351,7 @@ def get_es_indices(uut, file_path="default", nchan="default", human_readable=0, 
     indices = []
     event_samples = []
     nchan = uut.nchan() if nchan == "default" else nchan
-    aichan = int(uut.get_ai_channels())
+    aichan = int(get_ai_channels(uut))
 
     if file_path == "default":
         data = uut.read_muxed_data()
@@ -397,3 +397,18 @@ def get_es_indices(uut, file_path="default", nchan="default", human_readable=0, 
             event_samples = es_string
 
     return [indices, event_samples]
+
+
+def get_ai_channels(uut):
+    """
+    Returns all of the AI channels. This is a more robust way to get the
+    total number of AI channels, as sometimes nchan can be set to include
+    the scratch pad.
+    """
+    ai_channels = 0
+    site_types = uut.get_site_types()
+    for ai_site in site_types["AISITES"]:
+        ai_site = "s{}".format(ai_site)
+        ai_channels += int(getattr(getattr(uut, ai_site), "NCHAN"))
+
+    return ai_channels

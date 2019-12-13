@@ -406,9 +406,34 @@ def get_ai_channels(uut):
     the scratch pad.
     """
     ai_channels = 0
-    site_types = uut.get_site_types()
+    site_types = get_site_types(uut)
     for ai_site in site_types["AISITES"]:
         ai_site = "s{}".format(ai_site)
         ai_channels += int(getattr(getattr(uut, ai_site), "NCHAN"))
 
     return ai_channels
+
+
+def get_site_types(uut):
+    """
+    Returns a dictionary with keys AISITES, AOSITES, and DIOSITES with the
+    corresponding values as lists of the channels which are AI, AO, and DIO.
+    """
+    AISITES = []
+    AOSITES = []
+    DIOSITES = []
+
+    for site in [1,2,3,4,5,6]:
+        try:
+            module_name = eval('uut.s{}.module_name'.format(site))
+            if module_name.startswith('acq'):
+                AISITES.append(site)
+            elif module_name.startswith('ao'):
+                AOSITES.append(site)
+            elif module_name.startswith('dio'):
+                DIOSITES.append(site)
+        except Exception:
+            continue
+
+    site_types = { "AISITES": AISITES, "AOSITES": AOSITES, "DIOSITES": DIOSITES }
+    return site_types

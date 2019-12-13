@@ -99,7 +99,7 @@ def create_rgm_stl():
     60000,f\n \
     75000,0\n \
     80000,f\n \
-    200000,0"
+    350000,0"
     return stl
 
 

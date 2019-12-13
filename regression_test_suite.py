@@ -478,6 +478,9 @@ def run_main():
     parser.add_argument('uuts', nargs='+', help="Names of uuts to test.")
 
     args = parser.parse_args()
+
+    start = time.time()
+
     all_tests = ["post", "pre_post", "rtm", "rtm_gpg", "rgm"]
 
     all_trgs = [[1,0,0], [1,0,1], [1,1,1]]
@@ -608,6 +611,11 @@ def run_main():
         axs = fig.add_subplot(plt_count,1,plt_count)
         run_test(args, axs, plt_count, uuts)
     plt.show()
+    
+    end = time.time()
+    elapsed = end - start
+    print('\033[36m'+"Elapsed time = ",time.strftime('%H:%M:%S', time.gmtime(elapsed)),'\033[0m')
+
     # regression_analysis.test_info(args, uut)
 
 

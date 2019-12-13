@@ -32,7 +32,7 @@ def get_data(uuts, args, channels):
             data[index] = data[index].reshape((-1, int(uut.s0.NCHAN)))
             data[index] = data[index][:,np.array(channels[index])-1]
 
-        events.append(uut.get_es_indices(human_readable=1, return_hex_string=1))
+        events.append(get_es_indices(uut, human_readable=1, return_hex_string=1))
 
     return data, events, sample_counter
 
@@ -324,3 +324,76 @@ def test_info(args, uuts):
     file.close()
     return None
 
+
+def get_es_indices(uut, file_path="default", nchan="default", human_readable=0, return_hex_string=0):
+    """
+    Returns the location of event samples.
+
+    get_es_indices will pull data from a system by default (it will also
+    read in a raw datafile) and reads through the data in order to find the
+    location of the event samples. The system will also return the raw
+    event sample data straight from the system.
+
+    If human_readable is set to 1 then the function will return the hex
+    interpretations of the event sample data. The indices will remain
+    unchanged.
+
+    If return_hex_string is set to 1 (provided human_readable has ALSO been
+    set) then the function will return one single string containing all of
+    the event samples.
+
+    Data returned by the function looks like:
+    [  [Event sample indices], [Event sample data]  ]
+    """
+    # a function that return the location of event samples.
+    # returns:
+    # [ [event sample indices], [ [event sample 1], ...[event sample N] ] ]
+    indices = []
+    event_samples = []
+    nchan = uut.nchan() if nchan == "default" else nchan
+    aichan = int(uut.get_ai_channels())
+
+    if file_path == "default":
+        data = uut.read_muxed_data()
+        data = np.array(data)
+        if data.dtype == np.int16:
+            # convert shorts back to raw bytes and then to longs.
+            data = np.frombuffer(data.tobytes(), dtype=np.uint32)
+    else:
+        data = np.fromfile(file_path, dtype=np.uint32)
+
+    if int(uut.s0.data32) == 0:
+        nchan = nchan / 2 # "effective" nchan has halved if data is shorts.
+        aichan = int(aichan / 2)
+    nchan = int(nchan)
+    for index, sample in enumerate(data[0::nchan]):
+        # if sample == np.int32(0xaa55f154): # aa55
+        if sample == np.uint32(0xaa55f154): # aa55
+            indices.append(index)
+            event_samples.append(data[index*nchan:index*nchan + aichan])
+
+
+    if human_readable == 1:
+        # Change decimal to hex.
+        ii = 0
+        while ii < len(event_samples):
+            if type(event_samples[ii]) == np.ndarray:
+                event_samples[ii] = event_samples[ii].tolist()
+            for indice, channel in enumerate(event_samples[ii]):
+                event_samples[ii][indice] = '0x{0:08X}'.format(channel)
+            ll = int(int(len(event_samples[ii]))/int(len(uut.get_aggregator_sites())))
+            event_samples[ii] = [event_samples[ii][i:i + ll] for i in range(0, len(event_samples[ii]), ll)]
+            ii += 1
+
+        if return_hex_string == 1:
+            # Make a single string containing the hex values.
+            es_string = ""
+            for num, sample in enumerate(event_samples):
+                for i in range(len(sample[0])):
+                    for x in event_samples[num]:
+                        es_string = es_string + str(x[i]) + " "
+                    es_string = es_string + "\n"
+                es_string = es_string + "\n"
+            event_samples = es_string
+
+    return [indices, event_samples]

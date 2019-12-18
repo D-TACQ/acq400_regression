@@ -37,6 +37,39 @@ def get_data(uuts, args, channels):
     return data, events, sample_counter
 
 
+def get_ideal_rtm_data(final_len=50000, sin_len=5000, es_len=1):
+    """
+    Parameter descriptions:
+        final_len:    Length of the full rtm data.
+        sin_len:      Length of each rtm_translen sized block.
+        es_len:       Number of samples in the ES.
+    """
+    # create a linear spacing between 0 and 0.5 * pi, where the
+    # number of samples is the size of the parameter sin_len.
+    x = np.linspace(0, 0.5 * np.pi, sin_len)
+    
+    y = np.sin(x)
+    
+    # Create an array of zeros of size final_len so we can insert
+    # the relevant data into it.
+    y2 = np.zeros(final_len)
+
+    es = np.array([np.nan]*es_len)
+    
+    for num, count in enumerate(range(0, int(final_len/sin_len))):
+        # Loop over each rtm_translen section and insert NaN(s) for the event sample
+        # and insert a sine wave chunk for the samples.
+        arr_section = np.concatenate((es, y)) 
+        pos = num * arr_section.shape[-1]
+
+        if arr_section.shape[-1] > y2[pos:pos+sin_len].shape[-1] and num == 9:
+            arr_section = arr_section[0:y2[pos:].shape[-1]]
+
+        y2[pos:pos+arr_section.shape[-1]] = arr_section #np.concatenate((es, y))
+
+    return y2 * 2**15
+
+
 def get_soft_trg_ideal(data):
     """
     Forms a perfect sine wave for a soft trigger run. Takes the channel data
@@ -99,7 +132,7 @@ def get_pre_post_ideal_wave(polarity=0, wave_length=20000, full_length=150000):
     return y2
 
 
-def get_ideal_data(test, trg, event, data=[]):
+def get_ideal_data(test, trg, event, data=[], es_len=1):
     """
     Returns the ideal data for the scenario, based on the test, the trigger
     and the event types.
@@ -113,7 +146,8 @@ def get_ideal_data(test, trg, event, data=[]):
         return ideal_data
 
     elif test == "rtm":
-        return None
+        ideal_data = get_ideal_rtm_data(final_len=data.shape[-1], sin_len=5000, es_len=es_len)
+        return ideal_data
 
     elif test == "rgm":
         return None
@@ -157,22 +191,26 @@ def compare(real_data, ideal_data, test, trg, event):
     # real_data.setflags(write=1)
     # fake_data = np.zeros(150000, dtype=np.int16)
     # real_data[10000] = 5000
-
-    ideal_data = scale_wave(real_data, ideal_data)
+    if test != "rtm":
+        ideal_data = scale_wave(real_data, ideal_data)
     # size_test_result = size_test(test, trg, event, real_data)
     # if not size_test_result:
     #     print(CRED, "INCORRECT SIZE DETECTED. Test failed.", CEND)
     #     plt.plot(real_data)
     #     plt.plot(ideal_data)
     #     plt.show()
-    comparison = np.allclose(real_data, ideal_data, atol=1000, rtol=0)
+    mask = ~(np.isnan(real_data) | np.isnan(ideal_data))
+    data_type = real_data.dtype
+    tolerance = np.iinfo(np.int16).max * 0.01 # 1% of max is the tolerance
+    
+    comparison = np.allclose(real_data[mask], ideal_data[mask], atol=tolerance, rtol=0)
     print("Data comparison result: {}".format(comparison))
     if not comparison:
-
+        print(CRED, "DATA COMPARISON FAILED", CEND)
         plt.plot(real_data)
         plt.plot(ideal_data)
         plt.show()
-        # exit(1)
+        exit(1)
     return comparison
 
 

@@ -37,6 +37,43 @@ def get_data(uuts, args, channels):
     return data, events, sample_counter
 
 
+
+def get_ideal_rgm_data(final_len=75000, es_len=1):
+    """ 
+    Parameter descriptions:
+        final_len: Length of the full rtm data.
+        es_len:    Number of samples in the ES.
+    """
+
+    # create a linear spacing between 0 and 0.5 * pi, where the
+    # number of samples is the size of the parameter sin_len.
+    x = np.linspace(0, 2 * np.pi, 20000)
+    y = np.sin(x)
+    
+    # Create an array of zeros of size final_len so we can insert
+    # the relevant data into it.
+    y2 = np.zeros(final_len)
+
+    es = np.array([np.nan]*es_len)
+
+    # Make a list of fractions of a full sine wave.
+    pattern = [0.25, 0.75, 0.25, 0.75, 1]
+    pos = 0 
+
+    for num, val in enumerate(pattern):
+        print("Hello")
+
+        # Loop over each burst, insert NaN(s) for the event sample
+        # and insert a sine wave chunk proportional to the size of the pattern.
+        arr_section = np.concatenate((es, y[0:int(val*y.shape[-1])]))
+        print(pos)
+
+        y2[pos:pos+arr_section.shape[-1]] = arr_section #np.concatenate((es, y))
+
+        pos = pos + arr_section.shape[-1]
+    return y2 * 2**15
+
+
 def get_ideal_rtm_data(final_len=50000, sin_len=5000, es_len=1):
     """
     Parameter descriptions:
@@ -150,7 +187,8 @@ def get_ideal_data(test, trg, event, data=[], es_len=1):
         return ideal_data
 
     elif test == "rgm":
-        return None
+        ideal_data = get_ideal_rgm_data(final_len=data.shape[-1], es_len=es_len)
+        return ideal_data
 
     elif test == "rtm_gpg":
         return None
@@ -191,7 +229,7 @@ def compare(real_data, ideal_data, test, trg, event):
     # real_data.setflags(write=1)
     # fake_data = np.zeros(150000, dtype=np.int16)
     # real_data[10000] = 5000
-    if test != "rtm":
+    if test != "rtm" and test != "rgm":
         ideal_data = scale_wave(real_data, ideal_data)
     # size_test_result = size_test(test, trg, event, real_data)
     # if not size_test_result:
@@ -209,6 +247,7 @@ def compare(real_data, ideal_data, test, trg, event):
         print(CRED, "DATA COMPARISON FAILED", CEND)
         plt.plot(real_data)
         plt.plot(ideal_data)
+        plt.grid(True)
         plt.show()
         exit(1)
     return comparison

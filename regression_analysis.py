@@ -61,12 +61,10 @@ def get_ideal_rgm_data(final_len=75000, es_len=1):
     pos = 0 
 
     for num, val in enumerate(pattern):
-        print("Hello")
 
         # Loop over each burst, insert NaN(s) for the event sample
         # and insert a sine wave chunk proportional to the size of the pattern.
         arr_section = np.concatenate((es, y[0:int(val*y.shape[-1])]))
-        print(pos)
 
         y2[pos:pos+arr_section.shape[-1]] = arr_section #np.concatenate((es, y))
 

@@ -91,15 +91,15 @@ def create_rtm_stl():
 def create_rgm_stl():
     # An example STL file for regression test purposes.
     stl = "0,f\n \
-    5000,0\n \
-    20000,f\n \
-    35000,0\n \
-    40000,f\n \
-    45000,0\n \
-    60000,f\n \
-    75000,0\n \
-    80000,f\n \
-    350000,0"
+    5005,0\n \
+    20005,f\n \
+    35005,0\n \
+    40005,f\n \
+    45005,0\n \
+    60005,f\n \
+    75005,0\n \
+    80005,f\n \
+    350005,0"
     return stl
 
 

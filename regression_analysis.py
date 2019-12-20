@@ -102,7 +102,7 @@ def get_ideal_rtm_data(final_len=50000, sin_len=5000, es_len=1):
 
         y2[pos:pos+arr_section.shape[-1]] = arr_section #np.concatenate((es, y))
 
-    return y2 * 2**15
+    return y2
 
 
 def get_soft_trg_ideal(data):
@@ -191,6 +191,7 @@ def get_ideal_data(test, trg, event, data=[], es_len=1):
     elif test == "rtm_gpg":
         return None
 
+    ideal_data = ideal_data * 2 ** 15 if data.dtype == np.int16 else ideal_data * 2 ** 31
     return ideal_data
 
 
@@ -288,7 +289,7 @@ def extract_sample_counter(data, aichan, nchan):
         data = np.frombuffer(data.tobytes(), dtype=np.uint32)
         sample_counter = data[int(aichan/2)::int(nchan/2)]
     else:
-        sample_counter = data[nchan::nchan]
+        sample_counter = data[aichan::nchan]
 
     return sample_counter
 

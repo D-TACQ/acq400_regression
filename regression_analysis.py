@@ -69,7 +69,7 @@ def get_ideal_rgm_data(final_len=75000, es_len=1):
         y2[pos:pos+arr_section.shape[-1]] = arr_section #np.concatenate((es, y))
 
         pos = pos + arr_section.shape[-1]
-    return y2 * 2**15
+    return y2
 
 
 def get_ideal_rtm_data(final_len=50000, sin_len=5000, es_len=1):
@@ -238,7 +238,7 @@ def compare(real_data, ideal_data, test, trg, event):
     #     plt.show()
     mask = ~(np.isnan(real_data) | np.isnan(ideal_data))
     data_type = real_data.dtype
-    tolerance = np.iinfo(np.int16).max * 0.01 # 1% of max is the tolerance
+    tolerance = np.iinfo(data_type).max * 0.01 # 1% of max is the tolerance
     
     comparison = np.allclose(real_data[mask], ideal_data[mask], atol=tolerance, rtol=0)
     print("Data comparison result: {}".format(comparison))

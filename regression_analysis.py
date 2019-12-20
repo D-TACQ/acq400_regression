@@ -288,7 +288,7 @@ def extract_sample_counter(data, aichan, nchan):
         data = np.frombuffer(data.tobytes(), dtype=np.uint32)
         sample_counter = data[int(aichan/2)::int(nchan/2)]
     else:
-        sample_counter = data[nchan::nchan]
+        sample_counter = data[aichan::nchan]
 
     return sample_counter
 

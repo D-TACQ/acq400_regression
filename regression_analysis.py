@@ -69,7 +69,7 @@ def get_ideal_rgm_data(final_len=75000, es_len=1):
         y2[pos:pos+arr_section.shape[-1]] = arr_section #np.concatenate((es, y))
 
         pos = pos + arr_section.shape[-1]
-    return y2 * 2**15
+    return y2
 
 
 def get_ideal_rtm_data(final_len=50000, sin_len=5000, es_len=1):

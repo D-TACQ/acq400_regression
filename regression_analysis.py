@@ -174,19 +174,15 @@ def get_ideal_data(test, trg, event, data=[], es_len=1):
     """
     if test == "post":
         ideal_data = get_post_ideal_wave(trg, data=data, full_length=data.shape[-1])
-        return ideal_data
 
     elif test == "pre_post":
         ideal_data = get_pre_post_ideal_wave(polarity=event[2])
-        return ideal_data
 
     elif test == "rtm":
         ideal_data = get_ideal_rtm_data(final_len=data.shape[-1], sin_len=5000, es_len=es_len)
-        return ideal_data
 
     elif test == "rgm":
         ideal_data = get_ideal_rgm_data(final_len=data.shape[-1], es_len=es_len)
-        return ideal_data
 
     elif test == "rtm_gpg":
         return None

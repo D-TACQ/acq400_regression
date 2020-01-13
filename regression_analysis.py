@@ -224,8 +224,12 @@ def compare(real_data, ideal_data, test, trg, event):
     # real_data.setflags(write=1)
     # fake_data = np.zeros(150000, dtype=np.int16)
     # real_data[10000] = 5000
-    if test != "rtm" and test != "rgm":
-        ideal_data = scale_wave(real_data, ideal_data)
+
+
+    # if test != "rtm" and test != "rgm":
+        # ideal_data = scale_wave(real_data, ideal_data)
+
+
     # size_test_result = size_test(test, trg, event, real_data)
     # if not size_test_result:
     #     print(CRED, "INCORRECT SIZE DETECTED. Test failed.", CEND)

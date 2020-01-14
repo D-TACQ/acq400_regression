@@ -509,6 +509,8 @@ def run_main():
         uut.s0.spad = '1,8,0'
         uut.s0.run0 = agg_before
         uuts.append(uut)
+    
+    args.directories = regression_setup.create_results_dir(uuts)
 
     if args.test.lower() == "all":
         print("You have selected to run all tests.")

@@ -35,24 +35,6 @@ import regression_analysis
 import regression_setup
 
 
-def create_fig(args, test, all=False):
-    if test == "post":
-        fig, axs = plt.subplots(3, 1, sharey=True, gridspec_kw={'hspace': 0.9})
-
-    else:
-        if args.trg == 'all' and args.event == 'all':
-            fig, axs = plt.subplots(6, 1, sharey=True, gridspec_kw={'hspace': 0.9})
-        elif args.event == 'all':
-            fig, axs = plt.subplots(2, 1, sharey=True, gridspec_kw={'hspace': 0.9})
-        elif args.trg == 'all':
-            fig, axs = plt.subplots(3, 1, sharey=True, gridspec_kw={'hspace': 0.9})
-        elif args.trg != 'all' and args.event != 'all' and all == 'False':
-            fig, axs = plt.subplots(1, 1, sharey=True, gridspec_kw={'hspace': 0.9})
-        else:
-            fig, axs = plt.subplots(6, 1, sharey=True, gridspec_kw={'hspace': 0.9})
-
-    return fig, axs
-
 
 def create_rtm_stl():
     stl =  "0,f\n \
@@ -277,7 +259,7 @@ def get_module_voltage(uut):
     return scale
 
 
-def run_test(args, axs, plt_count, uuts):
+def run_test(args, uuts):
     CRED = "\x1b[1;31m"
     CGREEN = "\x1b[1;32m"
     CYELLOW = "\x1b[1;33m"
@@ -386,12 +368,6 @@ def run_test(args, axs, plt_count, uuts):
                         print("SPAD TEST PASSED!")
                 elif args.demux == 1:
                     print(CYELLOW, "Can't access SPAD when demux = 1. If SPAD analysis is required please set demux = 0.", CEND)
-                try:
-                    axs[plt_count].plot(channel_data)
-                    axs[plt_count].set_title("Test: {} Runs: {} Trg: {} Event: {}".format(args.test, args.loops, args.trg, args.event))
-                except Exception:
-                    axs.plot(channel_data)
-                    axs.set_title("Test: {} Runs: {} Trg: {} Event: {}".format(args.test, args.loops, args.trg, args.event))
 
         if args.custom_test == 1:
             custom_test(args, uuts)
@@ -399,24 +375,16 @@ def run_test(args, axs, plt_count, uuts):
         if success_flag == False:
             print(CRED , "Event samples are not identical. Exiting now. " , CEND)
             print("Tests run: ", iteration)
-            plt.show()
-            exit(1)
+            # exit(1)
         else:
             print(CGREEN + "Test successful. Test number: ", iteration, CEND)
             data = []
             events = []
             sample_counter = []
-        # import code
         # code.interact(local=locals())
     print(CBLUE);print("Finished '{}' test. Total tests run: {}".format(args.test, args.loops));print(CEND)
 
-    # plt.pause(0.001)
-    # plt.show(block=False)
-    # plt.show()
-    try:
-        return axs[plt_count]
-    except Exception:
-        return axs
+    return None
 
 
 def run_main():
@@ -519,11 +487,6 @@ def run_main():
 
         for test in all_tests:
             args.test = test
-            # fig, axs = create_fig(args, test, all=True)
-            # fig, axs = plt.subplots(1, 6, sharey=True)
-            fig = plt.figure()
-            # axs = fig.add_subplot(111)
-            plt_count = 1
 
 
             for trg in all_trgs:
@@ -532,97 +495,61 @@ def run_main():
                     continue
 
                 if test == "post": # Don't need any events for post mode.
-                    args.event = "N/A"
-                    fig = regression_setup.incr_axes(fig, plt_count)
-                    axs = fig.add_subplot(plt_count,1,plt_count)
+                    args.event = "NA"
+                    # fig = regression_setup.incr_axes(fig, plt_count)
                     print("\nNow running: {} test with" \
                                         " trigger: {}\n".format(test, args.trg))
-                    run_test(args, axs, plt_count, uuts)
-                    plt_count += 1
+                    run_test(args, uuts)
 
                 else:
 
                     for event in all_events:
-                        fig = regression_setup.incr_axes(fig, plt_count)
-                        axs = fig.add_subplot(plt_count,1,plt_count)
                         args.event = event
                         print("\nNow running: {} test with trigger: {} and" \
                         " event: {}\n".format(test, args.trg, args.event))
-                        run_test(args, axs, plt_count, uuts)
-                        plt_count += 1
-
-            plt.show()
+                        run_test(args, uuts)
+            
         regression_analysis.test_info(args, uuts)
 
     elif args.trg == "all" and args.event == "all":
-        # fig, axs = create_fig(args, args.test)
-        fig = plt.figure()
-        plt_count = 1
 
         for trg in all_trgs:
             if args.test == 'rgm' and trg == [1,0,0]:
                 continue
             args.trg = trg
             if args.test == "post": # Don't need any events for post mode.
-                fig = regression_setup.incr_axes(fig, plt_count)
-                axs = fig.add_subplot(plt_count,1,plt_count)
-                args.event = "N/A"
+                args.event = "NA"
                 print("\nNow running: {} test with" \
                                     " trigger: {}\n".format(args.test, args.trg))
-                plt_count += 1
-                run_test(args, axs, plt_count, uuts)
+                run_test(args, uuts)
             else:
                 for event in all_events:
-                    fig = regression_setup.incr_axes(fig, plt_count)
-                    axs = fig.add_subplot(plt_count,1,plt_count)
                     args.event = event
                     print("\nNow running: {} test with trigger: {} and" \
                     " event: {}\n".format(args.test, args.trg, args.event))
-                    plt_count += 1
-                    run_test(args, axs, plt_count, uuts)
-        plt.show()
+                    run_test(args, uuts)
 
     elif args.trg == "all":
-        fig = plt.figure()
-        # fig, axs = create_fig(args, args.test)
-        plt_count = 1
         args.event = args.event.split(",")
         args.event = [int(i) for i in args.event]
         for trg in all_trgs:
-            fig = regression_setup.incr_axes(fig, plt_count)
-            axs = fig.add_subplot(plt_count,1,plt_count)
             args.trg = trg
-            plt_count += 1
-            run_test(args, axs, plt_count, uuts)
-        plt.show()
+            run_test(args, uuts)
 
     elif args.event == "all":
         args.trg = args.trg.split(",")
         args.trg = [int(i) for i in args.trg]
-        # fig, axs = create_fig(args, args.test)
-        fig = plt.figure()
-        plt_count = 1
         for event in all_events:
-            fig = regression_setup.incr_axes(fig, plt_count)
-            axs = fig.add_subplot(plt_count,1,plt_count)
             args.event = event
-            plt_count += 1
-            run_test(args, axs, plt_count, uuts)
-        plt.show()
+            run_test(args, uuts)
 
     else:
         test = args.test
-        # fig, axs = create_fig(args, test)
-        fig = plt.figure()
         args.trg = args.trg.split(",")
         args.trg = [int(i) for i in args.trg]
         args.event = args.event.split(",")
         args.event = [int(i) for i in args.event]
-        plt_count = 1
-        fig = regression_setup.incr_axes(fig, plt_count)
-        axs = fig.add_subplot(plt_count,1,plt_count)
-        run_test(args, axs, plt_count, uuts)
-    plt.show()
+        run_test(args, uuts)
     
     end = time.time()
     elapsed = end - start

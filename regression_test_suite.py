@@ -226,10 +226,21 @@ def show_es(events, uuts):
     return None
 
 
-def save_data(uuts):
-    for uut in uuts:
-        data = uut.read_muxed_data()
-        data.tofile("{}_shot_data".format(uut.s0.HN))
+def save_data(uuts, data, channels, args):
+
+    directories = args.directories.copy()
+    for index, directory in enumerate(directories):
+        sub_dir = "{}/{}".format(directory, args.test + "_" + "".join(str(item) for item in args.trg) + "_" + "".join(str(item) for item in args.event))
+        directories[index] = sub_dir
+        if not os.path.exists(sub_dir):
+            os.makedirs(sub_dir)
+
+    for index, uut in enumerate(uuts):
+        for num, channel in enumerate(channels[index]):
+            channel_data = data[index][:,num]
+            print(directories[index])
+            channel_data.tofile("{}/{}_ch_{}_data.dat".format(directories[index], args.test, num+1))
+    
     return None
 
 
@@ -362,7 +373,8 @@ def run_test(args, axs, plt_count, uuts):
         success_flag = check_es(events)
         if args.show_es == 1:
             show_es(events, uuts)
-        save_data(uuts)
+        
+        save_data(uuts, data, channels, args)
         for index, data_set in enumerate(data):
             for num, ch in enumerate(channels[index]):
                 channel_data = data[index][:,num]

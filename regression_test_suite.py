@@ -368,8 +368,6 @@ def run_test(args, axs, plt_count, uuts):
             uut.statmon.wait_stopped()
         data, events, sample_counter = regression_analysis.get_data(uuts, args, channels)
 
-        print(data[0].shape)
-        # if args.demux == 0:
         success_flag = check_es(events)
         if args.show_es == 1:
             show_es(events, uuts)

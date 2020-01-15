@@ -33,6 +33,7 @@ import matplotlib.pyplot as plt
 import sys
 import regression_analysis
 import regression_setup
+import regression_visualisation
 
 
 
@@ -556,6 +557,7 @@ def run_main():
     print('\033[36m'+"Elapsed time = ",time.strftime('%H:%M:%S', time.gmtime(elapsed)),'\033[0m')
 
     # regression_analysis.test_info(args, uut)
+    regression_visualisation.view_last_run(args, uuts)
 
 
 if __name__ == '__main__':

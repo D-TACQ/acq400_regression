@@ -6,7 +6,29 @@ suite.
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import os
+import datetime
 
+
+def create_results_dir(uuts):
+    # Implements the results directory properly.
+    # Returns a list of the new directories (should be one for each UUT).
+    # For ease of use the directories will all have the same date time stamp.
+
+    date_time = datetime.datetime.now().strftime("%y%m%d%H%M")
+    directories = []
+
+    for uut in uuts:
+        mezz = uut.s1.MODEL
+        FPGA_name = uut.s0.fpga_version.split(" ")[0]
+        HN = uut.s0.HN
+        HN_date = HN + "_" + date_time
+        directory = "./results/{}/{}/{}".format(mezz, FPGA_name, HN_date)
+        print(directory)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        directories.append(directory)
+    return directories
 
 def configure_post(uut, role, trigger=[1,1,1], post=100000):
     """

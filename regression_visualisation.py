@@ -7,11 +7,14 @@ import numpy as np
 import regression_setup
 
 
-def get_data_from_dirs_list(dirs):
+def get_data_from_dirs_list(args, uuts, dirs):
     data = []
+    
+    _dtype = np.int32 if int(uuts[0].s0.data32) else np.int16
     all_tests = ["post", "pre_post", "rtm", "rtm_gpg", "rgm"]
     fig = plt.figure()
     plt_count = 1
+    plot = 0
     for test in all_tests:
 
         gen = (dir for dir in dirs if dir.split("/")[-2].startswith(test))
@@ -24,13 +27,16 @@ def get_data_from_dirs_list(dirs):
                 fig = regression_setup.incr_axes(fig, plt_count)
                 axs = fig.add_subplot(plt_count,1,plt_count)
                 plt_count += 1
-                plt.plot(np.fromfile(file, dtype=np.int16))
+                plt.plot(np.fromfile(file, dtype=_dtype))
                 plt.title(file.split("/")[-3])
+                plot = 1
         
-        plt.show()
-        fig = plt.figure()
-        plt_count = 1
-        continue
+        if plot:
+            plt.show()
+            fig = plt.figure()
+            plt_count = 1
+            plot = 0
+            continue
 
     return data
 
@@ -45,9 +51,9 @@ def get_file_list(directory):
     return file_list
     
 
-def view_last_run(args, uut):
+def view_last_run(args, uuts):
     directories = args.directories.copy()
     dirs = [directories[0] + "/" + name + "/" for name in os.listdir(directories[0])]
-    data = get_data_from_dirs_list(dirs)
+    data = get_data_from_dirs_list(args, uuts, dirs)
     return None
 

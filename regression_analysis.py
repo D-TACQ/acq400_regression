@@ -397,7 +397,7 @@ def test_info(args, uuts):
         os.makedirs(dir)
 
     import datetime
-    file = open(dir + fpga.split(" ")[1] + "_" + datetime.datetime.now().strftime("%y%m%d%H%M"), "a")
+    file = open(dir + fpga.split(" ")[1] + "_" + datetime.datetime.now().strftime("%y%m%d%H%M") + ".log", "a")
     file.write(string_to_print)
     file.close()
     return None

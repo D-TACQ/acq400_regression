@@ -8,6 +8,7 @@ suite.
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import sys
 
 
 CRED = "\x1b[1;31m"
@@ -385,7 +386,7 @@ def test_info(args, uuts):
 
 
         string_to_print = string_to_print + "{}\n\n" * (7+len(sites))
-        string_to_print = string_to_print.format(run_string test_time, run_count, hostname, fpga, \
+        string_to_print = string_to_print.format(run_string, test_time, run_count, hostname, fpga, \
             software_version, aggregator, *(site for site in sites))
         string_to_print = string_to_print + "\n----------------------\n"
     print(string_to_print)

@@ -389,7 +389,7 @@ def test_info(args, uuts):
         string_to_print = string_to_print + "\n----------------------\n"
     print(string_to_print)
 
-    dir = "./results/{}/".format(MODEL)
+    dir = args.directories[0] + "/"
     import os
     if not os.path.exists(dir):
         os.makedirs(dir)

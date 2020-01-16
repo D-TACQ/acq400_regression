@@ -8,6 +8,7 @@ suite.
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import sys
 
 
 CRED = "\x1b[1;31m"
@@ -364,6 +365,7 @@ def test_info(args, uuts):
     - Tests run.
     - Time.
     """
+    run_string = " ".join(sys.argv[0:])
     for uut in uuts:
         hostname = "Hostname: " + uut.s0.HN
         # firmware = uut.s0.FW
@@ -383,8 +385,8 @@ def test_info(args, uuts):
             sites.append("Sites: \n{}, {}, {}, {}".format(site, MODEL, PART_NUM, SERIAL))
 
 
-        string_to_print = string_to_print + "{}\n\n" * (6+len(sites))
-        string_to_print = string_to_print.format(test_time, run_count, hostname, fpga, \
+        string_to_print = string_to_print + "{}\n\n" * (7+len(sites))
+        string_to_print = string_to_print.format(run_string, test_time, run_count, hostname, fpga, \
             software_version, aggregator, *(site for site in sites))
         string_to_print = string_to_print + "\n----------------------\n"
     print(string_to_print)
@@ -395,7 +397,7 @@ def test_info(args, uuts):
         os.makedirs(dir)
 
     import datetime
-    file = open(dir + fpga.split(" ")[1] + "_" + datetime.datetime.now().strftime("%y%m%d%H%M"), "a")
+    file = open(dir + fpga.split(" ")[1] + "_" + datetime.datetime.now().strftime("%y%m%d%H%M") + ".log", "a")
     file.write(string_to_print)
     file.close()
     return None

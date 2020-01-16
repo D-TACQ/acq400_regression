@@ -7,9 +7,10 @@ import numpy as np
 import regression_setup
 
 
-def get_data_from_dirs_list(args, uut, dirs):
+def get_data_from_dirs_list(args, uuts, dirs):
     data = []
-    _dtype = np.int32 if int(uut.s0.data32) else np.int16
+    
+    _dtype = np.int32 if int(uuts[0].s0.data32) else np.int16
     all_tests = ["post", "pre_post", "rtm", "rtm_gpg", "rgm"]
     fig = plt.figure()
     plt_count = 1
@@ -50,9 +51,9 @@ def get_file_list(directory):
     return file_list
     
 
-def view_last_run(args, uut):
+def view_last_run(args, uuts):
     directories = args.directories.copy()
     dirs = [directories[0] + "/" + name + "/" for name in os.listdir(directories[0])]
-    data = get_data_from_dirs_list(args, uut, dirs)
+    data = get_data_from_dirs_list(args, uuts, dirs)
     return None
 

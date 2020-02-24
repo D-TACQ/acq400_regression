@@ -118,6 +118,10 @@ def config_gpg(uut, args, trg=1):
     uut.s0.gpg_enable = 0
     uut.s0.gpg_clk = "1,2,1" # GPG clock is the same as the site.
     uut.s0.gpg_trg = "1,{},1".format(trg)
+
+    if args.is_43X:
+        uut.s0.gpg_sync = "1,2,1"
+
     uut.s0.gpg_mode = 3 # LOOPWAIT
 
     if args.test == "rgm":

@@ -498,7 +498,7 @@ def run_main():
 
             for trg in all_trgs:
                 args.trg = trg
-                if test == 'rgm' and trg == [1,0,0]:
+                if test == 'rgm' and trg != [1,1,1]:
                     continue
 
                 if test == "post": # Don't need any events for post mode.
@@ -511,17 +511,30 @@ def run_main():
                 else:
 
                     for event in all_events:
+                        if test == 'rgm':
+                            # Only run RGM mode once as trigger and RGM are now
+                            # hard coded to 1,1,1 and 2,0,1 respectively
+                            # in the setup file. Event is actually redundant in
+                            # RGM mode.
+                            if event != [1,0,0]:
+                                # Skip all but one as explained above.
+                                continue
+                            else:
+                                # This has no effect other than for the graph label
+                                # as the event and RGM are hardcoded for RGM mode.
+                                event = [2,0,1]
+
                         args.event = event
                         print("\nNow running: {} test with trigger: {} and" \
                         " event: {}\n".format(test, args.trg, args.event))
                         run_test(args, uuts)
-            
+
         regression_analysis.test_info(args, uuts)
 
     elif args.trg == "all" and args.event == "all":
 
         for trg in all_trgs:
-            if args.test == 'rgm' and trg == [1,0,0]:
+            if args.test == 'rgm' and trg != [1,1,1]:
                 continue
             args.trg = trg
             if args.test == "post": # Don't need any events for post mode.
@@ -531,6 +544,18 @@ def run_main():
                 run_test(args, uuts)
             else:
                 for event in all_events:
+                    if args.test == 'rgm':
+                        # Only run RGM mode once as trigger and RGM are now
+                        # hard coded to 1,1,1 and 2,0,1 respectively
+                        # in the setup file. Event is actually redundant in
+                        # RGM mode.
+                        if event != [1,0,0]:
+                            # Skip all but one as explained above.
+                            continue
+                        else:
+                            # This has no effect other than for the graph label
+                            # as the event and RGM are hardcoded for RGM mode.
+                            event = [2,0,1]
                     args.event = event
                     print("\nNow running: {} test with trigger: {} and" \
                     " event: {}\n".format(args.test, args.trg, args.event))

@@ -120,7 +120,9 @@ def config_gpg(uut, args, trg=1):
     uut.s0.gpg_trg = "1,{},1".format(trg)
 
     if args.is_43X:
-        uut.s0.gpg_sync = "1,2,1"
+        # We want to use the falling edge of the index pulse from the master
+        # site in order to skew the progression of the GPG and the site sampling.
+        uut.s0.gpg_sync = "1,2,0"
 
     uut.s0.gpg_mode = 3 # LOOPWAIT
 

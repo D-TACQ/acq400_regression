@@ -229,7 +229,7 @@ def save_data(uuts, data, channels, args):
             channel_data = data[index][:,num]
             print(directories[index])
             channel_data.tofile("{}/{}_ch_{}_data.dat".format(directories[index], args.test, num+1))
-    
+
     return None
 
 
@@ -360,7 +360,7 @@ def run_test(args, uuts):
         success_flag = check_es(events)
         if args.show_es == 1:
             show_es(events, uuts)
-        
+
         save_data(uuts, data, channels, args)
         for index, data_set in enumerate(data):
             for num, ch in enumerate(channels[index]):
@@ -484,7 +484,7 @@ def run_main():
         uut.s0.spad = '1,2,0'
         uut.s0.run0 = agg_before
         uuts.append(uut)
-    
+
     args.directories = regression_setup.create_results_dir(uuts)
 
     if args.test.lower() == "all":
@@ -582,7 +582,7 @@ def run_main():
         args.event = args.event.split(",")
         args.event = [int(i) for i in args.event]
         run_test(args, uuts)
-    
+
     end = time.time()
     elapsed = end - start
     print('\033[36m'+"Elapsed time = ",time.strftime('%H:%M:%S', time.gmtime(elapsed)),'\033[0m')

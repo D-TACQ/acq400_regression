@@ -2,19 +2,20 @@
 
 
 import os
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 import numpy as np
 import regression_setup
 
 
 def get_data_from_dirs_list(args, uuts, dirs):
     data = []
-    
     _dtype = np.int32 if int(uuts[0].s0.data32) else np.int16
     all_tests = ["post", "pre_post", "rtm", "rtm_gpg", "rgm"]
     fig = plt.figure()
     plt_count = 1
     plot = 0
+    prev_dir = None
+
     for test in all_tests:
 
         gen = (dir for dir in dirs if dir.split("/")[-2].startswith(test))
@@ -22,15 +23,19 @@ def get_data_from_dirs_list(args, uuts, dirs):
             if dir.split("/")[-2].startswith("rtm_gpg") and test == "rtm":
                 continue
             files = [dir + "/" + name for name in os.listdir(dir)]
+
             for file in files:
-                
-                fig = regression_setup.incr_axes(fig, plt_count)
-                axs = fig.add_subplot(plt_count,1,plt_count)
-                plt_count += 1
+
+                if dir.split("/")[-2] != prev_dir:
+                    fig = regression_setup.incr_axes(fig, plt_count)
+                    axs = fig.add_subplot(plt_count, 1, plt_count)
+                    plt_count += 1
+
                 plt.plot(np.fromfile(file, dtype=_dtype))
                 plt.title(file.split("/")[-3])
                 plot = 1
-        
+                prev_dir = dir.split("/")[-2]
+
         if plot:
             plt.show()
             fig = plt.figure()
@@ -49,7 +54,7 @@ def get_file_list(directory):
             filePath = os.path.join(root, file)
             file_list.append(filePath)
     return file_list
-    
+
 
 def view_last_run(args, uuts):
     directories = args.directories.copy()

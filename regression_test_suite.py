@@ -120,7 +120,9 @@ def config_gpg(uut, args, trg=1):
     uut.s0.gpg_trg = "1,{},1".format(trg)
 
     if args.is_43X:
-        uut.s0.gpg_sync = "1,2,1"
+        # We want to use the falling edge of the index pulse from the master
+        # site in order to skew the progression of the GPG and the site sampling.
+        uut.s0.gpg_sync = "1,2,0"
 
     uut.s0.gpg_mode = 3 # LOOPWAIT
 
@@ -227,7 +229,7 @@ def save_data(uuts, data, channels, args):
             channel_data = data[index][:,num]
             print(directories[index])
             channel_data.tofile("{}/{}_ch_{}_data.dat".format(directories[index], args.test, num+1))
-    
+
     return None
 
 
@@ -358,7 +360,7 @@ def run_test(args, uuts):
         success_flag = check_es(events)
         if args.show_es == 1:
             show_es(events, uuts)
-        
+
         save_data(uuts, data, channels, args)
         for index, data_set in enumerate(data):
             for num, ch in enumerate(channels[index]):
@@ -482,7 +484,7 @@ def run_main():
         uut.s0.spad = '1,2,0'
         uut.s0.run0 = agg_before
         uuts.append(uut)
-    
+
     args.directories = regression_setup.create_results_dir(uuts)
 
     if args.test.lower() == "all":
@@ -496,7 +498,7 @@ def run_main():
 
             for trg in all_trgs:
                 args.trg = trg
-                if test == 'rgm' and trg == [1,0,0]:
+                if test == 'rgm' and trg != [1,1,1]:
                     continue
 
                 if test == "post": # Don't need any events for post mode.
@@ -509,17 +511,30 @@ def run_main():
                 else:
 
                     for event in all_events:
+                        if test == 'rgm':
+                            # Only run RGM mode once as trigger and RGM are now
+                            # hard coded to 1,1,1 and 2,0,1 respectively
+                            # in the setup file. Event is actually redundant in
+                            # RGM mode.
+                            if event != [1,0,0]:
+                                # Skip all but one as explained above.
+                                continue
+                            else:
+                                # This has no effect other than for the graph label
+                                # as the event and RGM are hardcoded for RGM mode.
+                                event = [2,0,1]
+
                         args.event = event
                         print("\nNow running: {} test with trigger: {} and" \
                         " event: {}\n".format(test, args.trg, args.event))
                         run_test(args, uuts)
-            
+
         regression_analysis.test_info(args, uuts)
 
     elif args.trg == "all" and args.event == "all":
 
         for trg in all_trgs:
-            if args.test == 'rgm' and trg == [1,0,0]:
+            if args.test == 'rgm' and trg != [1,1,1]:
                 continue
             args.trg = trg
             if args.test == "post": # Don't need any events for post mode.
@@ -529,6 +544,18 @@ def run_main():
                 run_test(args, uuts)
             else:
                 for event in all_events:
+                    if args.test == 'rgm':
+                        # Only run RGM mode once as trigger and RGM are now
+                        # hard coded to 1,1,1 and 2,0,1 respectively
+                        # in the setup file. Event is actually redundant in
+                        # RGM mode.
+                        if event != [1,0,0]:
+                            # Skip all but one as explained above.
+                            continue
+                        else:
+                            # This has no effect other than for the graph label
+                            # as the event and RGM are hardcoded for RGM mode.
+                            event = [2,0,1]
                     args.event = event
                     print("\nNow running: {} test with trigger: {} and" \
                     " event: {}\n".format(args.test, args.trg, args.event))
@@ -555,7 +582,7 @@ def run_main():
         args.event = args.event.split(",")
         args.event = [int(i) for i in args.event]
         run_test(args, uuts)
-    
+
     end = time.time()
     elapsed = end - start
     print('\033[36m'+"Elapsed time = ",time.strftime('%H:%M:%S', time.gmtime(elapsed)),'\033[0m')

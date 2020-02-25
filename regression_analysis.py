@@ -40,7 +40,7 @@ def get_data(uuts, args, channels):
 
 
 def get_ideal_rgm_data(final_len=75000, es_len=1):
-    """ 
+    """
     Parameter descriptions:
         final_len: Length of the full rtm data.
         es_len:    Number of samples in the ES.
@@ -50,7 +50,7 @@ def get_ideal_rgm_data(final_len=75000, es_len=1):
     # number of samples is the size of the parameter sin_len.
     x = np.linspace(0, 2 * np.pi, 20000)
     y = np.sin(x)
-    
+
     # Create an array of zeros of size final_len so we can insert
     # the relevant data into it.
     y2 = np.zeros(final_len)
@@ -59,7 +59,7 @@ def get_ideal_rgm_data(final_len=75000, es_len=1):
 
     # Make a list of fractions of a full sine wave.
     pattern = [0.25, 0.75, 0.25, 0.75, 1]
-    pos = 0 
+    pos = 0
 
     for num, val in enumerate(pattern):
 
@@ -83,19 +83,19 @@ def get_ideal_rtm_data(final_len=50000, sin_len=5000, es_len=1):
     # create a linear spacing between 0 and 0.5 * pi, where the
     # number of samples is the size of the parameter sin_len.
     x = np.linspace(0, 0.5 * np.pi, sin_len)
-    
+
     y = np.sin(x)
-    
+
     # Create an array of zeros of size final_len so we can insert
     # the relevant data into it.
     y2 = np.zeros(final_len)
 
     es = np.array([np.nan]*es_len)
-    
+
     for num, count in enumerate(range(0, int(final_len/sin_len))):
         # Loop over each rtm_translen section and insert NaN(s) for the event sample
         # and insert a sine wave chunk for the samples.
-        arr_section = np.concatenate((es, y)) 
+        arr_section = np.concatenate((es, y))
         pos = num * arr_section.shape[-1]
 
         if arr_section.shape[-1] > y2[pos:pos+sin_len].shape[-1] and num == 9:
@@ -240,7 +240,7 @@ def compare(real_data, ideal_data, test, trg, event):
     mask = ~(np.isnan(real_data) | np.isnan(ideal_data))
     data_type = real_data.dtype
     tolerance = np.iinfo(data_type).max * 0.01 # 1% of max is the tolerance
-    
+
     comparison = np.allclose(real_data[mask], ideal_data[mask], atol=tolerance, rtol=0)
     print("Data comparison result: {}".format(comparison))
     if not comparison:

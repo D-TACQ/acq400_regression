@@ -239,7 +239,7 @@ def compare(real_data, ideal_data, test, trg, event):
     #     plt.show()
     mask = ~(np.isnan(real_data) | np.isnan(ideal_data))
     data_type = real_data.dtype
-    tolerance = np.iinfo(data_type).max * 0.01 # 1% of max is the tolerance
+    tolerance = np.iinfo(data_type).max * 0.025 # 1% of max is the tolerance
 
     comparison = np.allclose(real_data[mask], ideal_data[mask], atol=tolerance, rtol=0)
     print("Data comparison result: {}".format(comparison))

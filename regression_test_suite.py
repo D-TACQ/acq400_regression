@@ -34,6 +34,7 @@ import sys
 import regression_analysis
 import regression_setup
 import regression_visualisation
+import re
 
 
 
@@ -197,12 +198,25 @@ def check_es(events):
         if uut_es == events[0]:
             continue
         else:
-            print("\nES comparison FAILED!\n")
+            print("\nES location comparison FAILED!\n")
             success_flag = False
             return False
     if success_flag == True:
-        print("\nES Comparison successful!\n")
-    return True
+        print("\nES location comparison successful!\n")
+
+    # import code
+    # code.interact(local=locals())
+    for index, item in enumerate(events[0][1].split("\n\n")):
+        for num, item2 in enumerate(item.split("\n")):
+            if num == 0:
+                for item3 in item2[0:-1].split(" ")[0:-1]:
+                    if not item3.startswith("0xAA55F15"):
+                        print(item3)
+                        print("Problem found in ES.")
+                        success_flag = False
+                        return success_flag
+
+    return success_flag
 
 
 def show_es(events, uuts):
@@ -357,9 +371,9 @@ def run_test(args, uuts):
             uut.statmon.wait_stopped()
         data, events, sample_counter = regression_analysis.get_data(uuts, args, channels)
 
-        success_flag = check_es(events)
         if args.show_es == 1:
             show_es(events, uuts)
+        success_flag = check_es(events)
 
         save_data(uuts, data, channels, args)
         for index, data_set in enumerate(data):
@@ -380,9 +394,9 @@ def run_test(args, uuts):
             custom_test(args, uuts)
 
         if success_flag == False:
-            print(CRED , "Event samples are not identical. Exiting now. " , CEND)
+            print(CRED , "There is a problem with the event samples. Please check them by hand. Exiting now. " , CEND)
             print("Tests run: ", iteration)
-            # exit(1)
+            exit(1)
         else:
             print(CGREEN + "Test successful. Test number: ", iteration, CEND)
             data = []

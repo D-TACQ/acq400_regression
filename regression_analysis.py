@@ -434,9 +434,7 @@ def get_es_indices(uut, file_path="default", nchan="default", human_readable=0, 
     if file_path == "default":
         data = uut.read_muxed_data()
         data = np.array(data)
-        if data.dtype == np.int16:
-            # convert shorts back to raw bytes and then to longs.
-            data = np.frombuffer(data.tobytes(), dtype=np.uint32)
+        data = np.frombuffer(data.tobytes(), dtype=np.uint32)
     else:
         data = np.fromfile(file_path, dtype=np.uint32)
 

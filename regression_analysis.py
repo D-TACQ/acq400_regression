@@ -22,16 +22,16 @@ def get_data(uuts, args, channels):
     data = []
     sample_counter = []
     events = []
-
+    data_size = 4 if uuts[0].s0.data32 == '1' else 2
     for index, uut in enumerate(uuts):
         if args.demux == 1:
             data.append(np.column_stack((uut.read_channels(tuple(channels[index])))))
-            # sample_counter.append()
         else:
-            data.append(uut.read_channels((0), -1)[0])
+            data.append(uut.read_chan(0, 0, data_size=data_size))
             sample_counter.append(extract_sample_counter(data[index], get_agg_chans(uut), uut.nchan()))
             data[index] = data[index].reshape((-1, int(uut.s0.NCHAN)))
             data[index] = data[index][:,np.array(channels[index])-1]
+
 
         events.append(get_es_indices(uut, human_readable=1, return_hex_string=1))
 

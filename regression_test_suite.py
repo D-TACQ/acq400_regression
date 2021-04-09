@@ -37,6 +37,9 @@ import regression_visualisation
 import re
 
 
+import logging
+mpl_logger = logging.getLogger('matplotlib')
+mpl_logger.setLevel(logging.WARNING)
 
 def create_rtm_stl():
     stl =  "0,f\n \

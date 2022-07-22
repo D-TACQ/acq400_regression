@@ -104,14 +104,22 @@ def calculate_frequency(args, uut, divisor):
     return freq
 
 
-def trigger_system(args, sig_gen):
+def trigger_system(args, sig_gen, uut):
     # if "rtm" not in args.test:
     time.sleep(1)
     if args.test != "rtm":
         print("Triggering now.")
         sig_gen.send("TRIG\n".encode())
         if args.trg[1] == 0 and args.test == "pre_post":
-            time.sleep(10)
+            olds = None
+            while True:
+                news = (uut.statmon.get_pre(), uut.statmon.get_elapsed())
+                if olds and news != olds:
+                    print("pre {} elapsed {}".format(news[0], news[1]))
+                if news[1] > news[0]:
+                    break
+                olds = news
+                time.sleep(0.1)
             sig_gen.send("TRIG\n".encode())
     return None
 
@@ -315,7 +323,7 @@ def run_test(args, uuts):
             if args.test == "pre_post":
                 if index == 0:
                     #regression_setup.configure_pre_post(uut, "master", trigger=args.trg, event=args.event)
-                    regression_setup.configure_pre_post(uut, "master", trigger=args.trg, event=args.event, pre=1048576, post=1572864)
+                    regression_setup.configure_pre_post(uut, "master", trigger=args.trg, event=args.event, pre=args.pre, post=args.post)
                 else:
                     # uut.s0.sync_role = "slave"
                     regression_setup.configure_pre_post(uut, "slave")
@@ -367,9 +375,7 @@ def run_test(args, uuts):
         except NameError:
             print("")
 
-        time.sleep(5)
-
-        trigger_system(args, sig_gen)
+        trigger_system(args, sig_gen, uuts[0])
 
         for index, uut in enumerate(uuts):
             uut.statmon.wait_stopped()
@@ -386,7 +392,10 @@ def run_test(args, uuts):
         for index, data_set in enumerate(data):
             for num, ch in enumerate(channels[index]):
                 channel_data = data[index][:,num]
-                ideal_data = regression_analysis.get_ideal_data(args.test, args.trg, args.event, data=channel_data)
+                if args.test == "pre_post":
+                    ideal_data = regression_analysis.get_ideal_data(args.test, args.trg, args.event, data=channel_data, pre=args.pre, post=args.post)
+                else:
+                    ideal_data = regression_analysis.get_ideal_data(args.test, args.trg, args.event, data=channel_data)
                 result = regression_analysis.compare(channel_data, ideal_data, args.test, args.trg, args.event)
                 if sample_counter != []:
                     spad_test = regression_analysis.check_sample_counter(sample_counter[index], args.test)
@@ -480,6 +489,12 @@ def run_main():
     parser.add_argument('--wave_scale', default='auto', type=str,
     help="What scale to make the input wave. Auto is default and any other setting \
     should be of the form '5V'")
+
+    parser.add_argument('--pre', default=1048576, type=int, 
+    help="set pre length for pre/post")
+    
+    parser.add_argument('--post', default=1048576, type=int, 
+    help="set post length for pre/post")
 
     parser.add_argument('uuts', nargs='+', help="Names of uuts to test.")
 

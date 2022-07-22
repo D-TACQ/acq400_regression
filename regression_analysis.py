@@ -169,7 +169,7 @@ def get_pre_post_ideal_wave(polarity=0, pre_length=50000, wave_length=20000, ful
     return y2
 
 
-def get_ideal_data(test, trg, event, data=[], es_len=1):
+def get_ideal_data(test, trg, event, data=[], es_len=1, pre=0, post=0):
     """
     Returns the ideal data for the scenario, based on the test, the trigger
     and the event types.
@@ -178,7 +178,7 @@ def get_ideal_data(test, trg, event, data=[], es_len=1):
         ideal_data = get_post_ideal_wave(trg, data=data, full_length=data.shape[-1])
 
     elif test == "pre_post":
-        ideal_data = get_pre_post_ideal_wave(polarity=event[2], pre_length=1048576, full_length=2621440)
+        ideal_data = get_pre_post_ideal_wave(polarity=event[2], pre_length=pre, full_length=(pre+post))
 
     elif test == "rtm":
         ideal_data = get_ideal_rtm_data(final_len=data.shape[-1], sin_len=5000, es_len=es_len)

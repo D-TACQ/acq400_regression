@@ -375,9 +375,12 @@ def run_test(args, uuts):
             uut.statmon.wait_stopped()
         data, events, sample_counter = regression_analysis.get_data(uuts, args, channels)
 
-        if args.show_es == 1:
+        if args.demux == 0 and args.show_es == 1:
             show_es(events, uuts)
-        success_flag = check_es(events)
+        if args.demux == 0:
+            success_flag = check_es(events)
+        else:
+            success_flag = True
 
         save_data(uuts, data, channels, args)
         for index, data_set in enumerate(data):

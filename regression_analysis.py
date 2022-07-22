@@ -33,7 +33,8 @@ def get_data(uuts, args, channels):
             data[index] = data[index][:,np.array(channels[index])-1]
 
 
-        events.append(get_es_indices(uut, human_readable=1, return_hex_string=1))
+        if args.demux == 0:
+            events.append(get_es_indices(uut, human_readable=1, return_hex_string=1))
 
     return data, events, sample_counter
 

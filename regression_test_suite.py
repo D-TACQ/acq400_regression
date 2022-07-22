@@ -95,6 +95,7 @@ class AnsiCol(enum.Enum):
     CGREEN = "\x1b[1;32m"
     CYELLOW = "\x1b[1;33m"
     CBLUE = "\x1b[1;34m"
+    CCYAN = '\033[36m'
     CEND = "\33[0m"
     def __str__(self):
         return str(self.value)
@@ -421,8 +422,17 @@ def run_test(args, uuts):
 
     return None
 
-def run_main():
+def reset_uut(args, uut):
+    uut.s0.set_abort
+    uut.s0.transient = "DEMUX={}".format(args.demux)
+    # check_master_slave(args, uut)
+    uut.s0.transient # print transient config
+    agg_before = uut.s0.aggregator.split(" ")[1].split("=")[1]
+    if args.demux == 0 : # No point in carrying SPAD around when we won't use it from 5300X pull
+        uut.s0.spad = '1,2,0'
+        uut.s0.run0 = agg_before 
 
+def ui():
     desc = "\n\nacq400_regression tests. For argument info run: \n\n" \
     "./regression_test_suite.py -h \n\n" \
     "For Usage examples see below:\n\n" \
@@ -494,30 +504,21 @@ def run_main():
     help="set post length for pre/post")
 
     parser.add_argument('uuts', nargs='+', help="Names of uuts to test.")
+    return parser.parse_args()
 
-    args = parser.parse_args()
+  
+def run_main():
+    start = time.time()    
 
-    start = time.time()
-
-    all_tests = ["post", "pre_post", "rtm", "rtm_gpg", "rgm"]
-
-    all_trgs = [[1,0,0], [1,0,1], [1,1,1]]
+    all_tests =  ["post", "pre_post", "rtm", "rtm_gpg", "rgm"]
+    all_trgs =   [[1,0,0], [1,0,1], [1,1,1]]
     all_events = [[1,0,0], [1,0,1]] # Not interested in any soft events.
+    args = ui()
 
-    uuts = []
+    uuts = [acq400_hapi.factory(u) for u in args.uuts]
 
-    for uut in args.uuts:
-        uut = acq400_hapi.Acq400(uut)
-
-        uut.s0.set_abort
-        uut.s0.transient = "DEMUX={}".format(args.demux)
-        # check_master_slave(args, uut)
-        uut.s0.transient # print transient config
-        agg_before = uut.s0.aggregator.split(" ")[1].split("=")[1]
-        if args.demux == 0 : # No point in carrying SPAD around when we won't use it from 5300X pull
-            uut.s0.spad = '1,2,0'
-            uut.s0.run0 = agg_before
-        uuts.append(uut)
+    for uut in uuts:
+        reset_uut(args, uut)
 
     args.directories = regression_setup.create_results_dir(uuts)
 
@@ -528,7 +529,6 @@ def run_main():
 
         for test in all_tests:
             args.test = test
-
 
             for trg in all_trgs:
                 args.trg = trg
@@ -617,9 +617,7 @@ def run_main():
         args.event = [int(i) for i in args.event]
         run_test(args, uuts)
 
-    end = time.time()
-    elapsed = end - start
-    print('\033[36m'+"Elapsed time = ",time.strftime('%H:%M:%S', time.gmtime(elapsed)),'\033[0m')
+    print(AnsiCol.CCYAN+"Elapsed time = ",time.strftime('%H:%M:%S', time.gmtime(time.time()-start)),AnsiCol.CEND)
 
     # regression_analysis.test_info(args, uut)
     regression_visualisation.view_last_run(args, uuts)

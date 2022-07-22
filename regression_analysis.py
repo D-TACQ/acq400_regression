@@ -145,7 +145,7 @@ def get_post_ideal_wave(trg, wave_length=20000, full_length=100000, data=[]):
     return ideal_wave
 
 
-def get_pre_post_ideal_wave(polarity=0, wave_length=20000, full_length=150000):
+def get_pre_post_ideal_wave(polarity=0, pre_length=50000, wave_length=20000, full_length=150000):
     """
     Returns a np array of scale 1, which contains a perfect pre_post array,
     with either a falling edge trigger or rising edge trigger.
@@ -161,9 +161,9 @@ def get_pre_post_ideal_wave(polarity=0, wave_length=20000, full_length=150000):
 
     y2 = np.zeros(full_length)
     if polarity == 1:
-        y2[50000:70000] = y1
+        y2[pre_length:np.add(pre_length,wave_length)] = y1
     else:
-        y2[30000:50000] = y1
+        y2[np.subtract(pre_length,wave_length):pre_length] = y1
 
     return y2
 
@@ -177,7 +177,7 @@ def get_ideal_data(test, trg, event, data=[], es_len=1):
         ideal_data = get_post_ideal_wave(trg, data=data, full_length=data.shape[-1])
 
     elif test == "pre_post":
-        ideal_data = get_pre_post_ideal_wave(polarity=event[2])
+        ideal_data = get_pre_post_ideal_wave(polarity=event[2], pre_length=1048576, full_length=2621440)
 
     elif test == "rtm":
         ideal_data = get_ideal_rtm_data(final_len=data.shape[-1], sin_len=5000, es_len=es_len)

@@ -111,7 +111,7 @@ def trigger_system(args, sig_gen):
         print("Triggering now.")
         sig_gen.send("TRIG\n".encode())
         if args.trg[1] == 0 and args.test == "pre_post":
-            time.sleep(2)
+            time.sleep(10)
             sig_gen.send("TRIG\n".encode())
     return None
 
@@ -314,7 +314,8 @@ def run_test(args, uuts):
 
             if args.test == "pre_post":
                 if index == 0:
-                    regression_setup.configure_pre_post(uut, "master", trigger=args.trg, event=args.event)
+                    #regression_setup.configure_pre_post(uut, "master", trigger=args.trg, event=args.event)
+                    regression_setup.configure_pre_post(uut, "master", trigger=args.trg, event=args.event, pre=1048576, post=1572864)
                 else:
                     # uut.s0.sync_role = "slave"
                     regression_setup.configure_pre_post(uut, "slave")
@@ -498,8 +499,9 @@ def run_main():
         # check_master_slave(args, uut)
         uut.s0.transient # print transient config
         agg_before = uut.s0.aggregator.split(" ")[1].split("=")[1]
-        uut.s0.spad = '1,2,0'
-        uut.s0.run0 = agg_before
+        if args.demux == 0 : # No point in carrying SPAD around when we won't use it from 5300X pull
+            uut.s0.spad = '1,2,0'
+            uut.s0.run0 = agg_before
         uuts.append(uut)
 
     args.directories = regression_setup.create_results_dir(uuts)

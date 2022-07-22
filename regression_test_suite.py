@@ -28,7 +28,6 @@ import os
 import time
 import argparse
 import socket
-from future import builtins
 import matplotlib.pyplot as plt
 import sys
 import regression_analysis
@@ -88,6 +87,19 @@ def create_rgm_stl():
     80005,f\n \
     350005,0"
     return stl
+
+
+import enum
+class AnsiCol(enum.Enum):
+    CRED = "\x1b[1;31m"
+    CGREEN = "\x1b[1;32m"
+    CYELLOW = "\x1b[1;33m"
+    CBLUE = "\x1b[1;34m"
+    CEND = "\33[0m"
+    def __str__(self):
+        return str(self.value)
+    def __add__(self, other):
+        return str(self)+other
 
 
 def calculate_frequency(args, uut, divisor):
@@ -290,21 +302,103 @@ def get_module_voltage(uut):
             scale = 10
     return scale
 
-import enum
-class AnsiCol(enum.Enum):
-    CRED = "\x1b[1;31m"
-    CGREEN = "\x1b[1;32m"
-    CYELLOW = "\x1b[1;33m"
-    CBLUE = "\x1b[1;34m"
-    CEND = "\33[0m"
-    def __str__(self):
-        return str(self.value)
-    def __add__(self, other):
-        return str(self)+other
 
-def run_test(args, uuts):
-    success_flag = True
+def configure_test_iteration(args, uut, is_master):
+    if args.test == "pre_post":
+        if is_master:
+            # regression_setup.configure_pre_post(uut, "master", trigger=args.trg, event=args.event)
+            regression_setup.configure_pre_post(uut, "master", trigger=args.trg, event=args.event, pre=args.pre, post=args.post)
+        else:
+            # uut.s0.sync_role = "slave"
+            regression_setup.configure_pre_post(uut, "slave")
+
+    elif args.test == "post":
+        if is_master:
+            regression_setup.configure_post(uut, "master", trigger=args.trg)
+        else:
+            regression_setup.configure_post(uut, "slave", trigger=args.trg)
+
+    elif args.test == "rtm":
+        if is_master:
+            regression_setup.configure_rtm(uut, "master", trigger=args.trg, event=args.event)
+        else:
+            regression_setup.configure_rtm(uut, "slave")
+
+    elif args.test == "rtm_gpg":
+        if is_master:
+            regression_setup.configure_rtm(uut, "master", trigger=args.trg, gpg=1, event=args.event)
+            if not config_gpg(uut, args, trg=0):            
+                print("Breaking out of test {} now.".format(args.test))
+                return False
+        else:
+            regression_setup.configure_rtm(uut, "slave")
+
+    elif args.test == "rgm":
+        if is_master:
+            regression_setup.configure_rgm(uut, "master", trigger=args.trg, post=75000, gpg=1)
+            gpg_config_success = config_gpg(uut, args, trg=0)
+            if gpg_config_success != True:
+                print("Breaking out of test {} now.".format(args.test))
+                return False
+        else:
+            uut.s0.sync_role = "slave"
+            regression_setup.configure_rgm(uut, "slave", post=75000)
+    
+    regression_analysis.check_config(args, uut)
+    return True
+            
+def run_test_iteration(args, uuts, iteration, sig_gen):
     channels = eval(args.channels[0])
+    data = []
+    events = []
+    sample_counter = []
+    success_flag = True
+
+    for index, uut in reversed(list(enumerate(uuts))):
+        if not configure_test_iteration(args, uut, index==0):
+            break
+
+        uut.s0.set_arm
+        uut.statmon.wait_armed()
+
+        trigger_system(args, sig_gen, uuts[0])
+
+        for index, uut in enumerate(uuts):
+            uut.statmon.wait_stopped()
+        data, events, sample_counter = regression_analysis.get_data(uuts, args, channels)
+
+        if args.demux == 0:
+            if args.show_es == 1:
+                show_es(events, uuts)        
+            success_flag = check_es(events)       
+
+        save_data(uuts, data, channels, args)
+        for index, data_set in enumerate(data):
+            for num, ch in enumerate(channels[index]):
+                channel_data = data[index][:, num]
+                if args.test == "pre_post":
+                    ideal_data = regression_analysis.get_ideal_data(args.test, args.trg, args.event, data=channel_data, pre=args.pre, post=args.post)
+                else:
+                    ideal_data = regression_analysis.get_ideal_data(args.test, args.trg, args.event, data=channel_data)
+                result = regression_analysis.compare(channel_data, ideal_data, args.test, args.trg, args.event)
+                if sample_counter != []:
+                    spad_test = regression_analysis.check_sample_counter(sample_counter[index], args.test)
+                    print("SPAD TEST FAILED!" if spad_test != [] else "SPAD TEST PASSED!")
+                elif args.demux == 1:
+                    print(AnsiCol.CYELLOW, "Can't access SPAD when demux = 1. If SPAD analysis is required please set demux = 0.", AnsiCol.CEND)
+
+        if args.custom_test == 1:
+            custom_test(args, uuts)
+
+        if success_flag == False:
+            print(AnsiCol.CRED , "There is a problem with the event samples. Please check them by hand. Exiting now. " , AnsiCol.CEND)
+            print("Tests run: ", iteration)
+            exit(1)
+        else:
+            print(AnsiCol.CGREEN + "Test successful. Test number: ", iteration, AnsiCol.CEND)
+
+                            
+def run_test(args, uuts):
     verify_inputs(args)
 
     if args.wave_scale == 'auto':
@@ -319,110 +413,7 @@ def run_test(args, uuts):
         configure_sig_gen(sig_gen, args, freq, scale)
 
     for iteration in list(range(1, args.loops+1)):
-        data = []
-        events = []
-        sample_counter = []
-        # plt.clf()
-        for index, uut in reversed(list(enumerate(uuts))):
-
-            if args.test == "pre_post":
-                if index == 0:
-                    #regression_setup.configure_pre_post(uut, "master", trigger=args.trg, event=args.event)
-                    regression_setup.configure_pre_post(uut, "master", trigger=args.trg, event=args.event, pre=args.pre, post=args.post)
-                else:
-                    # uut.s0.sync_role = "slave"
-                    regression_setup.configure_pre_post(uut, "slave")
-
-            elif args.test == "post":
-                if index == 0:
-                    regression_setup.configure_post(uut, "master", trigger=args.trg)
-                else:
-                    regression_setup.configure_post(uut, "slave", trigger=args.trg)
-
-            elif args.test == "rtm":
-                if index == 0:
-                    regression_setup.configure_rtm(uut, "master", trigger=args.trg, event=args.event)
-                else:
-                    regression_setup.configure_rtm(uut, "slave")
-
-            elif args.test == "rtm_gpg":
-                if index == 0:
-                    regression_setup.configure_rtm(uut, "master", trigger=args.trg, gpg=1, event=args.event)
-                    gpg_config_success = config_gpg(uut, args, trg=0)
-                    if gpg_config_success != True:
-                        print("Breaking out of test {} now.".format(args.test))
-                        break
-                else:
-                    regression_setup.configure_rtm(uut, "slave")
-
-            elif args.test == "rgm":
-                if index == 0:
-                    regression_setup.configure_rgm(uut, "master", trigger=args.trg, post=75000, gpg=1)
-                    gpg_config_success = config_gpg(uut, args, trg=0)
-                    if gpg_config_success != True:
-                        print("Breaking out of test {} now.".format(args.test))
-                        break
-                else:
-                    uut.s0.sync_role = "slave"
-                    regression_setup.configure_rgm(uut, "slave", post=75000)
-
-            regression_analysis.check_config(args, uut)
-
-            uut.s0.set_arm
-            uut.statmon.wait_armed()
-
-        try:
-            # Here the value of gpg_config_success is verified, as we need to
-            # break out of the outer loop if it is false. If it does not exist
-            # then do nothing.
-            if gpg_config_success != True:
-                break
-        except NameError:
-            print("")
-
-        trigger_system(args, sig_gen, uuts[0])
-
-        for index, uut in enumerate(uuts):
-            uut.statmon.wait_stopped()
-        data, events, sample_counter = regression_analysis.get_data(uuts, args, channels)
-
-        if args.demux == 0 and args.show_es == 1:
-            show_es(events, uuts)
-        if args.demux == 0:
-            success_flag = check_es(events)
-        else:
-            success_flag = True
-
-        save_data(uuts, data, channels, args)
-        for index, data_set in enumerate(data):
-            for num, ch in enumerate(channels[index]):
-                channel_data = data[index][:,num]
-                if args.test == "pre_post":
-                    ideal_data = regression_analysis.get_ideal_data(args.test, args.trg, args.event, data=channel_data, pre=args.pre, post=args.post)
-                else:
-                    ideal_data = regression_analysis.get_ideal_data(args.test, args.trg, args.event, data=channel_data)
-                result = regression_analysis.compare(channel_data, ideal_data, args.test, args.trg, args.event)
-                if sample_counter != []:
-                    spad_test = regression_analysis.check_sample_counter(sample_counter[index], args.test)
-                    if spad_test != []:
-                        print("SPAD TEST FAILED!")
-                    else:
-                        print("SPAD TEST PASSED!")
-                elif args.demux == 1:
-                    print(AnsiCol.CYELLOW, "Can't access SPAD when demux = 1. If SPAD analysis is required please set demux = 0.", AnsiCol.CEND)
-
-        if args.custom_test == 1:
-            custom_test(args, uuts)
-
-        if success_flag == False:
-            print(AnsiCol.CRED , "There is a problem with the event samples. Please check them by hand. Exiting now. " , AnsiCol.CEND)
-            print("Tests run: ", iteration)
-            exit(1)
-        else:
-            print(AnsiCol.CGREEN+"Test successful. Test number: ", iteration, AnsiCol.CEND)
-            data = []
-            events = []
-            sample_counter = []
+        run_test_iteration(args, uuts, iteration, sig_gen)
         # code.interact(local=locals())
     print(AnsiCol.CBLUE);print("Finished '{}' test. Total tests run: {}".format(args.test, args.loops));print(AnsiCol.CEND)
 

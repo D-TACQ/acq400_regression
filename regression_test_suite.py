@@ -346,7 +346,8 @@ def configure_test_iteration(args, uut, is_master):
     
     regression_analysis.check_config(args, uut)
     return True
-            
+
+@acq400_hapi.timing            
 def run_test_iteration(args, uuts, iteration, sig_gen):
     channels = eval(args.channels[0])
     data = []
@@ -397,7 +398,8 @@ def run_test_iteration(args, uuts, iteration, sig_gen):
         else:
             print(AnsiCol.CGREEN + "Test successful. Test number: ", iteration, AnsiCol.CEND)
 
-                            
+ 
+@acq400_hapi.timing
 def run_test(args, uuts):
     verify_inputs(args)
 
@@ -418,7 +420,6 @@ def run_test(args, uuts):
     print(AnsiCol.CBLUE);print("Finished '{}' test. Total tests run: {}".format(args.test, args.loops));print(AnsiCol.CEND)
 
     return None
-
 
 def run_main():
 

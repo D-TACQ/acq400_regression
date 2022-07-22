@@ -290,14 +290,19 @@ def get_module_voltage(uut):
             scale = 10
     return scale
 
-
-def run_test(args, uuts):
+import enum
+class AnsiCol(enum.Enum):
     CRED = "\x1b[1;31m"
     CGREEN = "\x1b[1;32m"
     CYELLOW = "\x1b[1;33m"
     CBLUE = "\x1b[1;34m"
     CEND = "\33[0m"
+    def __str__(self):
+        return str(self.value)
+    def __add__(self, other):
+        return str(self)+other
 
+def run_test(args, uuts):
     success_flag = True
     channels = eval(args.channels[0])
     verify_inputs(args)
@@ -404,22 +409,22 @@ def run_test(args, uuts):
                     else:
                         print("SPAD TEST PASSED!")
                 elif args.demux == 1:
-                    print(CYELLOW, "Can't access SPAD when demux = 1. If SPAD analysis is required please set demux = 0.", CEND)
+                    print(AnsiCol.CYELLOW, "Can't access SPAD when demux = 1. If SPAD analysis is required please set demux = 0.", AnsiCol.CEND)
 
         if args.custom_test == 1:
             custom_test(args, uuts)
 
         if success_flag == False:
-            print(CRED , "There is a problem with the event samples. Please check them by hand. Exiting now. " , CEND)
+            print(AnsiCol.CRED , "There is a problem with the event samples. Please check them by hand. Exiting now. " , AnsiCol.CEND)
             print("Tests run: ", iteration)
             exit(1)
         else:
-            print(CGREEN + "Test successful. Test number: ", iteration, CEND)
+            print(AnsiCol.CGREEN+"Test successful. Test number: ", iteration, AnsiCol.CEND)
             data = []
             events = []
             sample_counter = []
         # code.interact(local=locals())
-    print(CBLUE);print("Finished '{}' test. Total tests run: {}".format(args.test, args.loops));print(CEND)
+    print(AnsiCol.CBLUE);print("Finished '{}' test. Total tests run: {}".format(args.test, args.loops));print(AnsiCol.CEND)
 
     return None
 

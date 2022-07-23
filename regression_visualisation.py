@@ -37,6 +37,7 @@ def get_data_from_dirs_list(args, uuts, dirs):
                 prev_dir = dir.split("/")[-2]
 
         if plot:
+            print("Plotting ...")
             plt.show()
             fig = plt.figure()
             plt_count = 1

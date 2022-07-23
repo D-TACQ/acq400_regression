@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 
 """
@@ -119,7 +119,7 @@ def calculate_frequency(args, uut, divisor):
 
 def trigger_system(args, sig_gen, uut):
     # if "rtm" not in args.test:
-    time.sleep(1)
+    time.sleep(1)  # is this still needed
     if args.test != "rtm":
         print("Triggering now.")
         sig_gen.send("TRIG\n".encode())
@@ -129,7 +129,7 @@ def trigger_system(args, sig_gen, uut):
                 news = (uut.statmon.get_pre(), uut.statmon.get_elapsed())
                 if olds and news != olds:
                     print("pre {} elapsed {}".format(news[0], news[1]))
-                if news[1] > news[0]:
+                if news[1] > news[0] + args.fudge_pp_event_time:
                     break
                 olds = news
                 time.sleep(0.1)
@@ -502,6 +502,12 @@ def ui():
     
     parser.add_argument('--post', default=1048576, type=int, 
     help="set post length for pre/post")
+    
+    parser.add_argument('--plot_previous', default=None, 
+    help="plot a previous result")
+    
+    parser.add_argument('--fudge_pp_event_time', default=100000, type=int, 
+    help="wait a bit more before pulling event trigger (this should be randomized)")
 
     parser.add_argument('uuts', nargs='+', help="Names of uuts to test.")
     return parser.parse_args()
@@ -519,6 +525,11 @@ def run_main():
 
     for uut in uuts:
         reset_uut(args, uut)
+        
+    if args.plot_previous:
+        args.directories = [ args.plot_previous ]
+        regression_visualisation.view_last_run(args, uuts)
+        return        
 
     args.directories = regression_setup.create_results_dir(uuts)
 

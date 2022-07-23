@@ -247,7 +247,7 @@ def compare(real_data, ideal_data, test, trg, event):
     if not comparison:
         print(CRED, "DATA COMPARISON FAILED", CEND)
         plt.plot(real_data)
-        plt.plot(ideal_data)
+        plt.plot(ideal_data-2000)
         plt.grid(True)
         plt.show()
         exit(1)

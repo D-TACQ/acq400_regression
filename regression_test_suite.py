@@ -118,22 +118,31 @@ def calculate_frequency(args, uut, divisor):
 
 
 def trigger_system(args, sig_gen, uut):
-    # if "rtm" not in args.test:
-    time.sleep(1)  # is this still needed
-    if args.test != "rtm":
-        print("Triggering now.")
-        sig_gen.send("TRIG\n".encode())
-        if args.trg[1] == 0 and args.test == "pre_post":
+    if "rtm" not in args.test: # We don't need to generate a trigger for the RTM regression modes
+        print("...Begin Trigger process...")
+        time.sleep(1) # Be careful. We need to check that we are in ARM before we send this trigger... SO WE SHOULD ACTUALLY CHECK THAT
+
+        if args.trg[1] == 0: # If trigger condition is EXT; send initial trigger to move from ARM to PRE
+            print("FIRE!\n")
+            sig_gen.send("TRIG\n".encode())
+
+        if args.test == "pre_post": # We need to add a fudge factor to delay trigger generation 
+                                    # until "fudge_pp_event_time" after PRE samples have been captured
+                                    # See commit cbd37f2082244d2cd7afa5883ff960df18adbf2f
+            print("PRE = {}    POST = {}".format(args.pre, args.post))
             olds = None
             while True:
                 news = (uut.statmon.get_pre(), uut.statmon.get_elapsed())
                 if olds and news != olds:
                     print("pre {} elapsed {}".format(news[0], news[1]))
-                if news[1] > news[0] + args.fudge_pp_event_time:
+                if news[1] > news[0]: # Elapsed is greater than PRE
+                    time.sleep(args.fudge_pp_event_time) # Wait for "fudge_pp_event_time"
                     break
                 olds = news
-                time.sleep(0.1)
+            time.sleep(0.1)
+            print("FIRE!\n")
             sig_gen.send("TRIG\n".encode())
+
     return None
 
 
@@ -497,7 +506,7 @@ def ui():
     help="What scale to make the input wave. Auto is default and any other setting \
     should be of the form '5V'")
 
-    parser.add_argument('--pre', default=1048576, type=int, 
+    parser.add_argument('--pre', default=99999, type=int, # PREMAX set in bos.sh to 99999 for most systems
     help="set pre length for pre/post")
     
     parser.add_argument('--post', default=1048576, type=int, 
@@ -506,8 +515,8 @@ def ui():
     parser.add_argument('--plot_previous', default=None, 
     help="plot a previous result")
     
-    parser.add_argument('--fudge_pp_event_time', default=100000, type=int, 
-    help="wait a bit more before pulling event trigger (this should be randomized)")
+    parser.add_argument('--fudge_pp_event_time', default=2, type=int, 
+    help="wait a few more seconds before pulling event trigger (this should be randomized)")
 
     parser.add_argument('uuts', nargs='+', help="Names of uuts to test.")
     return parser.parse_args()

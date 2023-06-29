@@ -207,7 +207,7 @@ def scale_wave(real_data, ideal_data):
     return scaled_data
 
 
-def compare(real_data, ideal_data, test, trg, event):
+def compare(real_data, ideal_data, test, trg, event, plot=1):
     """
 
     """
@@ -244,7 +244,7 @@ def compare(real_data, ideal_data, test, trg, event):
 
     comparison = np.allclose(real_data[mask], ideal_data[mask], atol=tolerance, rtol=0)
     print("Data comparison result: {}".format(comparison))
-    if not comparison:
+    if not comparison and plot:
         print(CRED, "DATA COMPARISON FAILED", CEND)
         plt.plot(real_data)
         plt.plot(ideal_data-2000)

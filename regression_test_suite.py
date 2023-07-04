@@ -441,7 +441,7 @@ def reset_uut(args, uut):
         uut.s0.spad = '1,2,0'
         uut.s0.run0 = agg_before 
 
-def ui():
+def get_parser():
     desc = "\n\nacq400_regression tests. For argument info run: \n\n" \
     "./regression_test_suite.py -h \n\n" \
     "For Usage examples see below:\n\n" \
@@ -519,16 +519,15 @@ def ui():
     help="wait a few more seconds before pulling event trigger (this should be randomized)")
 
     parser.add_argument('uuts', nargs='+', help="Names of uuts to test.")
-    return parser.parse_args()
+    return parser
 
-  
-def run_main():
-    start = time.time()    
+
+def run_main(args):
+    start = time.time()
 
     all_tests =  ["post", "pre_post", "rtm", "rtm_gpg", "rgm"]
     all_trgs =   [[1,0,0], [1,0,1], [1,1,1]]
     all_events = [[1,0,0], [1,0,1]] # Not interested in any soft events.
-    args = ui()
 
     uuts = [acq400_hapi.factory(u) for u in args.uuts]
 
@@ -644,4 +643,4 @@ def run_main():
 
 
 if __name__ == '__main__':
-    run_main()
+    run_main(get_parser().parse_args())

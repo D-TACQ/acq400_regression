@@ -114,6 +114,15 @@ def calculate_frequency(args, uut, divisor):
     if int(freq) == 0 :
         print("\n\nWarning CLK Frequency reading ZERO!!!\n\n")
         exit()
+        
+    fpga_version = uut.s0.fpga_version
+    
+    if 'DEC10' in fpga_version:
+        freq = freq / 10
+    
+    if 'DEC4' in fpga_version:
+        freq = freq / 4
+
     return freq
 
 

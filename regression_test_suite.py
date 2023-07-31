@@ -114,6 +114,15 @@ def calculate_frequency(args, uut, divisor):
     if int(freq) == 0 :
         print("\n\nWarning CLK Frequency reading ZERO!!!\n\n")
         exit()
+        
+    fpga_version = uut.s0.fpga_version
+    
+    if 'DEC10' in fpga_version:
+        freq = freq / 10
+    
+    if 'DEC4' in fpga_version:
+        freq = freq / 4
+
     return freq
 
 
@@ -303,7 +312,9 @@ def get_module_voltage(uut):
     if "V" in part_num:
         for item in part_num.split("-"):
             if "V" in item:
-                scale = int(item.split("V")[0])
+                scale = int(item.replace('V', ''))
+                if scale > 14:
+                    scale = scale / 10
                 break
     else:
         if part_num.startswith("ACQ48"):

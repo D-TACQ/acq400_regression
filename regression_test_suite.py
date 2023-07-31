@@ -303,7 +303,9 @@ def get_module_voltage(uut):
     if "V" in part_num:
         for item in part_num.split("-"):
             if "V" in item:
-                scale = int(item.split("V")[0])
+                scale = int(item.replace('V', ''))
+                if scale > 14:
+                    scale = scale / 10
                 break
     else:
         if part_num.startswith("ACQ48"):
